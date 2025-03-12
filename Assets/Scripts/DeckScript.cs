@@ -56,15 +56,15 @@ public class DeckScript : MonoBehaviour
         currentIndex = 1;   // index0 = back of card
     }
 
-    public int DealCard(CardScript card)
+    public CardScript DealCard(CardScript card)
     {
         card.SetSprite(deck[currentIndex]);
         card.SetValue(cardValues[currentIndex]);
         currentIndex++;
-        return card.GetValue();
+        return card;
     }
 
-    public Sprite GetCardBack()
+    public Sprite GetBackOfCard()
     {
         return deck[0];
     }

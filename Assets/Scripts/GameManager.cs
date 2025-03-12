@@ -6,19 +6,24 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    // Game Buttons
-    public Button dealButton;
+    // Action Buttons
     public Button hitButton;
     public Button standButton;
-    public Button betButton;
+    public Button splitButton;
+    public Button doubleButton;
 
-    private int standClicks = 0;
+    public int standClicks = 0;
+
+    // Prephase buttons
+    public Button dealButton;
+    public Button betButton;
 
     // Access the player and dealer's hand
     public PlayerScript player;
     public PlayerScript dealer;
+    public DeckScript deck;
 
-    //public Text to access and update - hud
+    // Player HUD
     public TMP_Text playerBalance;
     public TMP_Text playerBet; 
     int betAmount = 0;
@@ -32,10 +37,18 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Listener for Buttons
         dealButton.onClick.AddListener(() => DealClicked());
+        betButton.onClick.AddListener(() => BetClicked());
+
         hitButton.onClick.AddListener(() => HitClicked());
         standButton.onClick.AddListener(() => StandClicked());
-        betButton.onClick.AddListener(() => BetClicked());
+        splitButton.onClick.AddListener(() => SplitClicked());
+        doubleButton.onClick.AddListener(() => DoubleClicked());
+
+        deck.Shuffle();
+
+        //GameObject.Find("Deck").GetComponent<DeckScript>().Shuffle();
     }
 
     private void DealClicked() 
@@ -43,22 +56,22 @@ public class GameManager : MonoBehaviour
         // Reset Round
         player.ResetHand();
         dealer.ResetHand();
-
-        // Hide dealer's hand value
         roundText.gameObject.SetActive(false);
-        dealerHandValue.gameObject.SetActive(false);
-        GameObject.Find("Deck").GetComponent<DeckScript>().Shuffle();
-        player.DealHand();
-        dealer.DealHand();
+        
+        // Only re-shuffle when penetration reached
 
-        // Update the hand values displayed
+
+        // GameObject.Find("Deck").GetComponent<DeckScript>().Shuffle();
+        
+        // Deal cards
+        player.DealHand("player");
         playerHandValue.text = player.handValue.ToString();
         playerHandValue.gameObject.SetActive(true);
+        
+        dealer.DealHand("dealer");
+        blinder.GetComponent<Renderer>().enabled = true;
         dealerHandValue.text = dealer.handValue.ToString();
         dealerHandValue.gameObject.SetActive(true);
-
-        // Enable to hid one of the dealer's cards
-        blinder.GetComponent<Renderer>().enabled = true;
 
         // Adjust Button Visibility
         dealButton.gameObject.SetActive(false);
@@ -68,7 +81,22 @@ public class GameManager : MonoBehaviour
         // Player Money Details
         playerBalance.text = "Balance: " + player.GetBalance().ToString();
         playerBet.text = "Bet: " + betAmount.ToString();
+    }
 
+    void MidRound()
+    {
+        // Check which buttons should be visible
+        if 
+    }
+
+    private void BetClicked()
+    {
+        Text newBet = betButton.GetComponentInChildren(typeof(TMP_Text)) as Text;
+        int intBet = int.Parse(newBet.text.ToString());
+        player.AdjustBalance(-intBet);
+        playerBalance.text = player.GetBalance().ToString();
+        betAmount += intBet;
+        playerBet.text = betAmount.ToString();
     }
 
     private void HitClicked() 
@@ -85,7 +113,8 @@ public class GameManager : MonoBehaviour
 
     private void StandClicked() 
     {
-        standClicks++;
+        standClicks = 2;
+        playerTurnOver();
         // Check that there is still room on the table
         // will modify later to dynamically adjust cards
         HitDealer();
@@ -93,24 +122,43 @@ public class GameManager : MonoBehaviour
         
     }
 
-    private void BetClicked()
+    private void SplitClicked()
     {
-        Text newBet = betButton.GetComponentInChildren(typeof(TMP_Text)) as Text;
-        int intBet = int.Parse(newBet.text.ToString());
-        player.AdjustBalance(-intBet);
-        playerBalance.text = player.GetBalance().ToString();
-        betAmount += intBet;
-        playerBet.text = betAmount.ToString();
+
+    }
+
+    private void DoubleClicked()
+    {
+
     }
 
     private void HitDealer()
     {
-        while (dealer.handValue < 16 && dealer.cardIndex < 10)
+        dealer.handValue += dealer.holeCard;
+        dealerHandValue.text = dealer.handValue.ToString();
+        while (dealer.handValue < 17 && dealer.cardIndex < 10)
         {
             dealer.GetCard();
             dealerHandValue.text = dealer.handValue.ToString();
             if (dealer.handValue > 20) RoundOver();
         }
+    }
+
+    void playerTurnOver()
+    {
+        // Disable action buttons
+        hitButton.gameObject.SetActive(false);
+        standButton.gameObject.SetActive(false);
+        splitButton.gameObject.SetActive(false);
+        doubleButton.gameObject.SetActive(false);
+
+        bool player21 = player.handValue == 21;
+        bool playerBust = player.handValue > 21;
+
+        // Check if player got Blackjack
+
+        // Check if player busted
+
     }
 
     // Hand is over
@@ -157,6 +205,9 @@ public class GameManager : MonoBehaviour
         {
             hitButton.gameObject.SetActive(false);
             standButton.gameObject.SetActive(false);
+            splitButton.gameObject.SetActive(false);
+            doubleButton.gameObject.SetActive(false);
+
             dealButton.gameObject.SetActive(true);
             roundText.gameObject.SetActive(true);
             dealerHandValue.gameObject.SetActive(true);

@@ -10,9 +10,13 @@ public class PlayerScript : MonoBehaviour
     public CardScript cardScript;
     public DeckScript deckScript;
     
+    public string playerType = "player";
+
     // Total value of player/dealer's hand
     public int handValue = 0;
     public int totalHands = 1;
+    public int holeCard = 0;    // Specifically for dealer
+    public List<List<CardScript>> hands = new List<List<CardScript>>
 
     // Betting money
     private int balance = 500;
@@ -25,29 +29,36 @@ public class PlayerScript : MonoBehaviour
     List<CardScript> aceList = new List<CardScript>();
 
     // Deal starting hand
-    public void DealHand()
+    public void DealHand(string typeOfPlayer)
     {
-        GetCard();
-        GetCard();
+        playerType = typeOfPlayer;
+        int card1 = GetCard();
+        int card2 = GetCard();
+        if (playerType == "dealer") 
+        {
+           holeCard = card2
+           handValue -= holeCard;
+        }
+        List<CardScript> hand = 
     }
 
     public int GetCard()
     {
         // Get a card, use deal card to assign sprite and value to card
-        int cardValue = deckScript.DealCard(hand[cardIndex].GetComponent<CardScript>());
+        CardScript card = deckScript.DealCard(hand[cardIndex].GetComponent<CardScript>());
         // Show card on game screen
         hand[cardIndex].GetComponent<Renderer>().enabled = true;
         // Add card value to running total of the hand
-        handValue += cardValue;
+        handValue += card.GetValue();
         // If value is 1, it is an ace
-        if (cardValue == 1)
+        if (card.GetValue() == 1)
         {
             aceList.Add(hand[cardIndex].GetComponent<CardScript>());
         }
         // Check if we should use an 11 instead of a 1
         AceCheck();
         cardIndex++;
-        return handValue;
+        return card.GetValue();
     }
 
     // Search for needed ace conversions, 1 to 11 or vice versa

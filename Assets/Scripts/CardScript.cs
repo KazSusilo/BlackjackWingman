@@ -17,10 +17,12 @@ public class CardScript : MonoBehaviour
         value = newValue;
     }
 
+    /*
     public string GetSpriteName()
     {
         return GetComponent<SpriteRenderer>().sprite.name;
     }
+    */
 
     public void SetSprite(Sprite newSprite)
     {
@@ -29,8 +31,8 @@ public class CardScript : MonoBehaviour
 
     public void ResetCard()
     {
-        Sprite back = GameObject.Find("Deck").GetComponent<DeckScript>().GetCardBack();
-        gameObject.GetComponent<SpriteRenderer>().sprite = back;
+        Sprite backOfCard = GameObject.Find("Deck").GetComponent<DeckScript>().GetBackOfCard();
+        gameObject.GetComponent<SpriteRenderer>().sprite = backOfCard;
         value = 0;
     }
 }

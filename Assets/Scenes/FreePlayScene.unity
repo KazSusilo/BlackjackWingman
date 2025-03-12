@@ -519,6 +519,7 @@ MonoBehaviour:
   cardScript: {fileID: 173894816}
   deckScript: {fileID: 784388279}
   handValue: 0
+  totalHands: 1
   hand:
   - {fileID: 173894813}
   - {fileID: 809581206}
@@ -558,7 +559,7 @@ Transform:
   m_GameObject: {fileID: 193674443}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.75, y: -3.4, z: -90}
+  m_LocalPosition: {x: -0.46, y: -3.4, z: -90}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3499,6 +3500,7 @@ MonoBehaviour:
   cardScript: {fileID: 849814185}
   deckScript: {fileID: 784388279}
   handValue: 0
+  totalHands: 1
   hand:
   - {fileID: 849814182}
   - {fileID: 193674443}
