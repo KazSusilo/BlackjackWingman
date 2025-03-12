@@ -41,8 +41,47 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Cards
+  - name: CardsL1
     uniqueID: 2436448775
+    locked: 0
+  - name: CardsL2
+    uniqueID: 1756123413
+    locked: 0
+  - name: CardsL3
+    uniqueID: 3183146251
+    locked: 0
+  - name: CardsL4
+    uniqueID: 2779127901
+    locked: 0
+  - name: CardsL5
+    uniqueID: 55481221
+    locked: 0
+  - name: CardsL6
+    uniqueID: 2434265935
+    locked: 0
+  - name: CardsL7
+    uniqueID: 944995309
+    locked: 0
+  - name: CardsL8
+    uniqueID: 2108835747
+    locked: 0
+  - name: CardsL9
+    uniqueID: 2118413531
+    locked: 0
+  - name: CardsL10
+    uniqueID: 2072053789
+    locked: 0
+  - name: CardsL11
+    uniqueID: 1126113597
+    locked: 0
+  - name: CardsL12
+    uniqueID: 3836185613
+    locked: 0
+  - name: CardsL13
+    uniqueID: 3700078673
+    locked: 0
+  - name: CardsL14
+    uniqueID: 3813115425
     locked: 0
   - name: HUD
     uniqueID: 3452567759

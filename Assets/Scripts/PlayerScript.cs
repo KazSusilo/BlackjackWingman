@@ -12,9 +12,10 @@ public class PlayerScript : MonoBehaviour
     
     // Total value of player/dealer's hand
     public int handValue = 0;
+    public int totalHands = 1;
 
     // Betting money
-    private int money = 1000;
+    private int balance = 500;
 
     // Array of card objects on table
     public GameObject[] hand;
@@ -23,8 +24,8 @@ public class PlayerScript : MonoBehaviour
     // Tracking aces for 1 to 11 conversions
     List<CardScript> aceList = new List<CardScript>();
 
-    // Start is called before the first frame update
-    public void StartHand()
+    // Deal starting hand
+    public void DealHand()
     {
         GetCard();
         GetCard();
@@ -36,7 +37,7 @@ public class PlayerScript : MonoBehaviour
         int cardValue = deckScript.DealCard(hand[cardIndex].GetComponent<CardScript>());
         // Show card on game screen
         hand[cardIndex].GetComponent<Renderer>().enabled = true;
-        // Ad card value to running total of the hand
+        // Add card value to running total of the hand
         handValue += cardValue;
         // If value is 1, it is an ace
         if (cardValue == 1)
@@ -44,8 +45,58 @@ public class PlayerScript : MonoBehaviour
             aceList.Add(hand[cardIndex].GetComponent<CardScript>());
         }
         // Check if we should use an 11 instead of a 1
-        //AceCheck();
+        AceCheck();
         cardIndex++;
         return handValue;
+    }
+
+    // Search for needed ace conversions, 1 to 11 or vice versa
+    public void AceCheck()
+    {
+        foreach (CardScript ace in aceList)
+        {
+            // if converting, adjust card object value and hand
+            if (handValue + 10 < 22 && ace.GetValue() == 1)
+            {
+                ace.SetValue(11);
+                handValue += 10;
+            } else if (handValue > 21 && ace.GetValue() == 11)
+            {
+                ace.SetValue(1);
+                handValue -= 10;
+            }
+        }
+    }
+
+    // Get player's current balance
+    public int GetBalance()
+    {
+        return balance;
+    }
+
+    // Add or subtract from player's balance
+    public void AdjustBalance(int amount)
+    {
+        balance += amount;
+    }
+
+    // Increase player's total hands (splitting)
+    public void AddHand()
+    {
+        totalHands++; 
+    }
+
+    // Hides all cards, resets the needed variables
+    public void ResetHand()
+    {
+        for (int i = 0; i < hand.Length; i++)
+        {
+            hand[i].GetComponent<CardScript>().ResetCard();
+            hand[i].GetComponent<Renderer>().enabled = false;
+        }
+        cardIndex = 0;
+        handValue = 0;
+        totalHands = 0;
+        aceList = new List<CardScript>();
     }
 }
