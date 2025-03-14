@@ -16,7 +16,9 @@ public class PlayerScript : MonoBehaviour
     public int handValue = 0;
     public int totalHands = 1;
     public int holeCard = 0;    // Specifically for dealer
-    public List<List<CardScript>> hands = new List<List<CardScript>>
+    public List<List<CardScript>> hands = new List<List<CardScript>>();
+    public List<int> handValues = new List<int>();
+    public List<List<CardScript>> handsAces = new List<List<CardScript>>();
 
     // Betting money
     private int balance = 500;
@@ -29,50 +31,54 @@ public class PlayerScript : MonoBehaviour
     List<CardScript> aceList = new List<CardScript>();
 
     // Deal starting hand
-    public void DealHand(string typeOfPlayer)
-    {
+    public void DealHand(string typeOfPlayer) {
+        List<CardScript> hand = new List<CardScript>();
+        List<CardScript> handAces = new List<CardScript>();
+        handsAces.Add()
         playerType = typeOfPlayer;
-        int card1 = GetCard();
-        int card2 = GetCard();
-        if (playerType == "dealer") 
-        {
-           holeCard = card2
-           handValue -= holeCard;
+
+        CardScript card1 = GetCard(0);
+        CardScript card2 = GetCard(0);
+        hand.Add(card1);
+        hand.Add(card2)
+        handValues.Add(card1.GetValue() + card2.GetValue());
+
+        if (playerType == "dealer") {
+           holeCard = card2.GetValue();
+           handValues[0] -= holeCard
         }
-        List<CardScript> hand = 
+
+        hands.Add(hand);
     }
 
-    public int GetCard()
-    {
+    public CardScript GetCard(int handIndex) {
         // Get a card, use deal card to assign sprite and value to card
         CardScript card = deckScript.DealCard(hand[cardIndex].GetComponent<CardScript>());
+        int handValue = handValues[handIndex];
         // Show card on game screen
         hand[cardIndex].GetComponent<Renderer>().enabled = true;
         // Add card value to running total of the hand
+        handValues[handIndex] += card.GetValue();
         handValue += card.GetValue();
         // If value is 1, it is an ace
-        if (card.GetValue() == 1)
-        {
+        if (card.GetValue() == 1) {
+            handsAces[handIndex].Add(card)
             aceList.Add(hand[cardIndex].GetComponent<CardScript>());
         }
         // Check if we should use an 11 instead of a 1
-        AceCheck();
+        handValue = AceConverter(handIndex);
         cardIndex++;
-        return card.GetValue();
+        return card;
     }
 
     // Search for needed ace conversions, 1 to 11 or vice versa
-    public void AceCheck()
-    {
-        foreach (CardScript ace in aceList)
-        {
+    public void AceConverter(int handIndex) {
+        foreach (CardScript ace in aceList) {
             // if converting, adjust card object value and hand
-            if (handValue + 10 < 22 && ace.GetValue() == 1)
-            {
+            if (handValue + 10 < 22 && ace.GetValue() == 1) {
                 ace.SetValue(11);
                 handValue += 10;
-            } else if (handValue > 21 && ace.GetValue() == 11)
-            {
+            } else if (handValue > 21 && ace.GetValue() == 11) {
                 ace.SetValue(1);
                 handValue -= 10;
             }

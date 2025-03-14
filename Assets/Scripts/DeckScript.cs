@@ -6,7 +6,7 @@ public class DeckScript : MonoBehaviour
 {
     public Sprite[] deck;
     int[] cardValues = new int[53];
-    int currentIndex = 0;
+    public int currentIndex = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -21,7 +21,7 @@ public class DeckScript : MonoBehaviour
         // Loop to assign values to each card in the deck
         for (int i = 0; i < deck.Length; i++) 
         {
-            // Count up to the amount of cards, 52 for a sinle deck
+            // Count up to the amount of cards, 52 for a single deck
             // if there is a remainder after x/13, then remainder
             // is used as the value, unless over 10, then use 10
             value = i;

@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public Button splitButton;
     public Button doubleButton;
 
-    public int standClicks = 0;
+    public int standClicks = 2;
 
     // Prephase buttons
     public Button dealButton;
@@ -47,22 +47,22 @@ public class GameManager : MonoBehaviour
         doubleButton.onClick.AddListener(() => DoubleClicked());
 
         deck.Shuffle();
-
         //GameObject.Find("Deck").GetComponent<DeckScript>().Shuffle();
     }
 
-    private void DealClicked() 
-    {
+    private void DealClicked() {
         // Reset Round
+        roundText.gameObject.SetActive(false);
+        // Only re-shuffle when penetration reached
+        if (deck.currentIndex >= 42)
+        {
+            deck.Shuffle();
+        }
+        DisableBetButtons();
+
         player.ResetHand();
         dealer.ResetHand();
-        roundText.gameObject.SetActive(false);
-        
-        // Only re-shuffle when penetration reached
-
-
-        // GameObject.Find("Deck").GetComponent<DeckScript>().Shuffle();
-        
+             
         // Deal cards
         player.DealHand("player");
         playerHandValue.text = player.handValue.ToString();
@@ -83,14 +83,7 @@ public class GameManager : MonoBehaviour
         playerBet.text = "Bet: " + betAmount.ToString();
     }
 
-    void MidRound()
-    {
-        // Check which buttons should be visible
-        if 
-    }
-
-    private void BetClicked()
-    {
+    private void BetClicked() {
         Text newBet = betButton.GetComponentInChildren(typeof(TMP_Text)) as Text;
         int intBet = int.Parse(newBet.text.ToString());
         player.AdjustBalance(-intBet);
@@ -99,27 +92,19 @@ public class GameManager : MonoBehaviour
         playerBet.text = betAmount.ToString();
     }
 
-    private void HitClicked() 
-    {
+    private void HitClicked() {
         // Check that there is still room on the table
         // will modify later to dynamically adjust cards
         if (player.cardIndex <= 10) 
         {
             player.GetCard();
             playerHandValue.text = player.handValue.ToString();
-            if (player.handValue > 20) RoundOver();
+            if (player.handValue > 20) playerTurnOver();
         }
     }
 
-    private void StandClicked() 
-    {
-        standClicks = 2;
+    private void StandClicked() { 
         playerTurnOver();
-        // Check that there is still room on the table
-        // will modify later to dynamically adjust cards
-        HitDealer();
-        RoundOver();
-        
     }
 
     private void SplitClicked()
@@ -132,46 +117,71 @@ public class GameManager : MonoBehaviour
 
     }
 
-    private void HitDealer()
+    private void PlayDealer()
     {
-        dealer.handValue += dealer.holeCard;
-        dealerHandValue.text = dealer.handValue.ToString();
-        while (dealer.handValue < 17 && dealer.cardIndex < 10)
-        {
-            dealer.GetCard();
-            dealerHandValue.text = dealer.handValue.ToString();
-            if (dealer.handValue > 20) RoundOver();
-        }
+        blinder.GetComponent<Renderer>().enabled = false;       // Show hole card
+        dealer.handValue += dealer.holeCard;                    // Add hole card to handValue
+        dealerHandValue.text = dealer.handValue.ToString();     // Update text
+        StartCoroutine(HitDealer());                            
     }
 
-    void playerTurnOver()
+    private IEnumerator HitDealer()
     {
-        // Disable action buttons
+        while (dealer.handValue < 17 && dealer.cardIndex < 10) {
+            yield return new WaitForSeconds(.5f);
+            dealer.GetCard();
+            dealerHandValue.text = dealer.handValue.ToString();
+        }
+        yield return new WaitForSeconds(.5f);
+        print("Over");
+        RoundOver();
+    }
+
+    private void playerTurn() {
+        for (int i = 0; i < player.hands.length(); i++) {
+            
+        }
+
+        // Check if we have BJ
+        if (player.handValue == 21) {
+            playerTurnOver();
+        }
+
+        // Check if we can split
+        if (player)
+
+
+    }
+
+    private void playerTurnOver()
+    {
+        DisableActionButtons();
+        PlayDealer();
+    }
+
+    private void DisableActionButtons()
+    {
         hitButton.gameObject.SetActive(false);
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
+    }
 
-        bool player21 = player.handValue == 21;
-        bool playerBust = player.handValue > 21;
-
-        // Check if player got Blackjack
-
-        // Check if player busted
+    private void DisableBetButtons()
+    {
 
     }
 
     // Hand is over
-    void RoundOver()
+    private void RoundOver()
     {
+        DisableActionButtons();
+
         // Booleans for bust and blackjack
         bool playerBust = player.handValue > 21;
         bool dealerBust = dealer.handValue > 21;
         bool player21 = player.handValue == 21;
         bool dealer21 = dealer.handValue == 21;
-
-        // If stand has been clicked less than twice, no 21s or busts, quit function
-        if (standClicks < 2 && !playerBust && !dealerBust && !player21 && !dealer21) return;
         bool roundOver = true;
 
         // if player busts or player hand < dealer hand, player loses
@@ -212,7 +222,6 @@ public class GameManager : MonoBehaviour
             roundText.gameObject.SetActive(true);
             dealerHandValue.gameObject.SetActive(true);
 
-            blinder.GetComponent<Renderer>().enabled = false;
             playerBalance.text = "Balance: " + player.GetBalance().ToString();
             standClicks = 0;
         }
