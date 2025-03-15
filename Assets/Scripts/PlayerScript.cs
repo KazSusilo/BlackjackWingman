@@ -27,18 +27,19 @@ public class PlayerScript : MonoBehaviour
     public GameObject[] hand;
     // Index of next card to be turned over
     public int cardIndex = 0;
+    public int handIndex = 0;
     // Tracking aces for 1 to 11 conversions
     List<CardScript> aceList = new List<CardScript>();
 
     // Deal starting hand
-    public void DealHand(string typeOfPlayer) {
+    public void DealHand(string typeOfPlayer, int handIndex) {
         List<CardScript> hand = new List<CardScript>();
         List<CardScript> handAces = new List<CardScript>();
         handsAces.Add()
         playerType = typeOfPlayer;
 
-        CardScript card1 = GetCard(0);
-        CardScript card2 = GetCard(0);
+        CardScript card1 = GetCard(handIndex);
+        CardScript card2 = GetCard(handIndex);
         hand.Add(card1);
         hand.Add(card2)
         handValues.Add(card1.GetValue() + card2.GetValue());
