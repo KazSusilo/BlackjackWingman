@@ -26,10 +26,11 @@ public class GameManager : MonoBehaviour
     // Player HUD
     public TMP_Text playerBalance;
     public TMP_Text playerBet; 
-    int betAmount = 0;
     public TMP_Text playerHandValue;
     public TMP_Text dealerHandValue;
     public TMP_Text roundText;
+    int betAmount = 0;
+    int handIndex = 0;
 
     // Blinder hiding dealer's card
     public GameObject blinder;
@@ -46,6 +47,8 @@ public class GameManager : MonoBehaviour
         splitButton.onClick.AddListener(() => SplitClicked());
         doubleButton.onClick.AddListener(() => DoubleClicked());
 
+        player.playerType = "player";
+        dealer.playerType = "dealer";
         deck.Shuffle();
         //GameObject.Find("Deck").GetComponent<DeckScript>().Shuffle();
     }
@@ -64,14 +67,16 @@ public class GameManager : MonoBehaviour
         dealer.ResetHand();
              
         // Deal cards
-        player.DealHand("player");
+        player.DealHand(handIndex);
         playerHandValue.text = player.handValue.ToString();
         playerHandValue.gameObject.SetActive(true);
         
-        dealer.DealHand("dealer");
+        dealer.DealHand(handIndex);
         blinder.GetComponent<Renderer>().enabled = true;
         dealerHandValue.text = dealer.handValue.ToString();
         dealerHandValue.gameObject.SetActive(true);
+
+        ActionPhase();
 
         // Adjust Button Visibility
         dealButton.gameObject.SetActive(false);
@@ -81,6 +86,11 @@ public class GameManager : MonoBehaviour
         // Player Money Details
         playerBalance.text = "Balance: " + player.GetBalance().ToString();
         playerBet.text = "Bet: " + betAmount.ToString();
+    }
+
+    private void ActionPhase() {
+        hitButton.gameObject.SetActive(true);
+        standButton.gameObject.SetActive(true);
     }
 
     private void BetClicked() {
@@ -99,17 +109,21 @@ public class GameManager : MonoBehaviour
         {
             player.GetCard();
             playerHandValue.text = player.handValue.ToString();
-            if (player.handValue > 20) playerTurnOver();
+            if (player.handValue > 20) {
+                playerBust();
+            }
         }
     }
 
     private void StandClicked() { 
-        playerTurnOver();
+        handIndex++;
+        if (handIndex == player.hands.Length) {
+            playerTurnOver();
+        }
     }
 
-    private void SplitClicked()
-    {
-
+    private void SplitClicked() {
+        player.SpltHand(handIndex)
     }
 
     private void DoubleClicked()
@@ -137,39 +151,18 @@ public class GameManager : MonoBehaviour
         RoundOver();
     }
 
-    private void playerTurn() {
-        for (int i = 0; i < player.hands.length(); i++) {
-            
-        }
-
-        // Check if we have BJ
-        if (player.handValue == 21) {
-            playerTurnOver();
-        }
-
-        // Check if we can split
-        if (player)
 
 
-    }
-
-    private void playerTurnOver()
-    {
-        DisableActionButtons();
-        PlayDealer();
-    }
-
-    private void DisableActionButtons()
-    {
+    private void DisableActionButtons() {
         hitButton.gameObject.SetActive(false);
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
     }
 
-    private void DisableBetButtons()
-    {
-
+    private void DisableBetButtons() {
+        betButton.gameObject.SetActive(false);
+        // Disable various amounts 
     }
 
     // Hand is over
@@ -224,6 +217,7 @@ public class GameManager : MonoBehaviour
 
             playerBalance.text = "Balance: " + player.GetBalance().ToString();
             standClicks = 0;
+            handIndex = 0;
         }
 
     }

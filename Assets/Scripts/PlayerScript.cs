@@ -12,96 +12,92 @@ public class PlayerScript : MonoBehaviour
     
     public string playerType = "player";
 
-    // Total value of player/dealer's hand
-    public int handValue = 0;
-    public int totalHands = 1;
-    public int holeCard = 0;    // Specifically for dealer
-    public List<List<CardScript>> hands = new List<List<CardScript>>();
-    public List<int> handValues = new List<int>();
-    public List<List<CardScript>> handsAces = new List<List<CardScript>>();
+    // Hand & Card Variables
+    private int holeCard = 0;    // Specifically for dealer
+    public List<int> handValues = new List<int> {0};
+    public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()};
+    public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
 
-    // Betting money
+    public GameObject[] cards;  // Array of card objects on table
+    public int cardsIndex = 0;
+
+    // Betting Variables
     private int balance = 500;
+    private int bet = 0;
 
     // Array of card objects on table
     public GameObject[] hand;
-    // Index of next card to be turned over
-    public int cardIndex = 0;
-    public int handIndex = 0;
     // Tracking aces for 1 to 11 conversions
     List<CardScript> aceList = new List<CardScript>();
 
-    // Deal starting hand
-    public void DealHand(string typeOfPlayer, int handIndex) {
-        List<CardScript> hand = new List<CardScript>();
-        List<CardScript> handAces = new List<CardScript>();
-        handsAces.Add()
-        playerType = typeOfPlayer;
+    // Deal starting hand (hands[0])
+    public void DealHand() {
+        CardScript card1 = GetCard(0);
+        CardScript card2 = GetCard(0);
+        hands[0].Add(card1)
+        hands[0].Add(card2)
 
-        CardScript card1 = GetCard(handIndex);
-        CardScript card2 = GetCard(handIndex);
-        hand.Add(card1);
-        hand.Add(card2)
-        handValues.Add(card1.GetValue() + card2.GetValue());
-
+        // Specific to dealer
         if (playerType == "dealer") {
-           holeCard = card2.GetValue();
-           handValues[0] -= holeCard
-        }
-
-        hands.Add(hand);
+            holeCard = card2.GetValue()
+            handValues[handIndex] -= holeCard
+        } 
     }
 
+    // Get a card and add it to hands[handindex]
     public CardScript GetCard(int handIndex) {
         // Get a card, use deal card to assign sprite and value to card
-        CardScript card = deckScript.DealCard(hand[cardIndex].GetComponent<CardScript>());
+        CardScript card = deckScript.DealCard(cards[cardsIndex].GetComponent<CardScript>());
         int handValue = handValues[handIndex];
-        // Show card on game screen
-        hand[cardIndex].GetComponent<Renderer>().enabled = true;
-        // Add card value to running total of the hand
-        handValues[handIndex] += card.GetValue();
         handValue += card.GetValue();
-        // If value is 1, it is an ace
-        if (card.GetValue() == 1) {
+
+        // Handle Aces
+        if (card.GetValue() == 1) { 
             handsAces[handIndex].Add(card)
-            aceList.Add(hand[cardIndex].GetComponent<CardScript>());
         }
-        // Check if we should use an 11 instead of a 1
-        handValue = AceConverter(handIndex);
-        cardIndex++;
+        handValue = AceConverter(handIndex, handValue);
+
+        // Update handValues and show card
+        handValues[handIndex] = handValue;
+        cards[cardsIndex].GetComponent<Renderer>().enabled = true;
+        cardsIndex++;
         return card;
     }
 
     // Search for needed ace conversions, 1 to 11 or vice versa
-    public void AceConverter(int handIndex) {
-        foreach (CardScript ace in aceList) {
+    public int AceConverter(int handIndex, int handValue) {
+        foreach (CardScript ace in handsAces[handIndex]) {
             // if converting, adjust card object value and hand
-            if (handValue + 10 < 22 && ace.GetValue() == 1) {
+            if (ace.GetValue() == 1 && handValue + 10 < 22) {
                 ace.SetValue(11);
                 handValue += 10;
-            } else if (handValue > 21 && ace.GetValue() == 11) {
+            } else if (ace.GetValue() == 11 && handValue > 21) {
                 ace.SetValue(1);
                 handValue -= 10;
             }
         }
+        return handValue
     }
 
-    // Get player's current balance
-    public int GetBalance()
-    {
-        return balance;
+    public void SplitHand(int handIndex) {
+        hands.Add(new List<CardScript>())
+        CardScript card = hands[handIndex][1]
+
+        // Make a new hand in hands
+        // Remove one of the cards from the first hand and add it to the second
+        // play out first hand as normal, play out second hand as normal 
     }
 
-    // Add or subtract from player's balance
-    public void AdjustBalance(int amount)
-    {
-        balance += amount;
-    }
+    // Balance Accessor Functions
+    public int GetBalance() { return balance; }
+    public void AdjustBalance(int amount) { balance += amount; }
+
+    // Hole Card Accessor Functions
+    public int GetHoleCard() { return holeCard; }
 
     // Increase player's total hands (splitting)
-    public void AddHand()
-    {
-        totalHands++; 
+    public void AddHand() {
+
     }
 
     // Hides all cards, resets the needed variables
