@@ -9,25 +9,21 @@ public class DeckScript : MonoBehaviour
     public int currentIndex = 0;
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start() {
         SetCardValues();
     }
 
-    // Sets a value to each card in the deck
-    void SetCardValues()
-    {
+    // Assigns a value to each card in the deck
+    void SetCardValues() {
         int value = 0;
         // Loop to assign values to each card in the deck
-        for (int i = 0; i < deck.Length; i++) 
-        {
+        for (int i = 0; i < deck.Length; i++) {
             // Count up to the amount of cards, 52 for a single deck
             // if there is a remainder after x/13, then remainder
             // is used as the value, unless over 10, then use 10
             value = i;
             value %= 13;
-            if (value > 10 || value == 0)
-            {
+            if (value > 10 || value == 0) {
                 value = 10;
             }
             cardValues[i] = value;
@@ -36,11 +32,9 @@ public class DeckScript : MonoBehaviour
     }
 
     // Shuffles deck
-    public void Shuffle()
-    {
+    public void Shuffle() {
         // Standard array data swapping technique
-        for (int i = deck.Length - 1; i > 0; --i)
-        {
+        for (int i = deck.Length - 1; i > 0; --i) {
             int j = Mathf.FloorToInt(Random.Range(0.0f, 1.0f) * (deck.Length - 1)) + 1;
             
             // Swap sprite of cards
@@ -56,8 +50,8 @@ public class DeckScript : MonoBehaviour
         currentIndex = 1;   // index0 = back of card
     }
 
-    public CardScript DealCard(CardScript card)
-    {
+    // Deals card in 'card' slot on table
+    public CardScript DealCard(CardScript card) {
         card.SetSprite(deck[currentIndex]);
         card.SetValue(cardValues[currentIndex]);
         currentIndex++;

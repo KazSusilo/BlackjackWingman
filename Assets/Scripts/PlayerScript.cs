@@ -10,7 +10,7 @@ public class PlayerScript : MonoBehaviour
     public CardScript cardScript;
     public DeckScript deckScript;
     
-    public string playerType = "player";
+    private string playerType = "player";
 
     // Hand & Card Variables
     private int holeCard = 0;    // Specifically for dealer
@@ -18,8 +18,9 @@ public class PlayerScript : MonoBehaviour
     public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()};
     public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
 
-    public GameObject[] cards;  // Array of card objects on table
-    public int cardsIndex = 0;
+    // Pre-defined array of card objects on table to be revealed
+    public GameObject[] cards;
+    public int cardsIndex = 0;  // Index of next card to be revealed
 
     // Betting Variables
     private int balance = 500;
@@ -42,6 +43,15 @@ public class PlayerScript : MonoBehaviour
             holeCard = card2.GetValue()
             handValues[handIndex] -= holeCard
         } 
+    }
+
+    // Returns the value of a given hand
+    public int GetHandValue(List<CardScript> hand) {
+        value = 0;
+        foreach (CardScript card in hand) {
+            value += card.GetValue();
+        }
+        return value;
     }
 
     // Get a card and add it to hands[handindex]
@@ -99,6 +109,13 @@ public class PlayerScript : MonoBehaviour
     public void AddHand() {
 
     }
+
+
+    // 
+    public void SetPlayerType(string type) {
+        playerType = type
+    }
+
 
     // Hides all cards, resets the needed variables
     public void ResetHand()
