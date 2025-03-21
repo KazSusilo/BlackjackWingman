@@ -13,7 +13,7 @@ public class PlayerScript : MonoBehaviour
     private string playerType = "player";
 
     // Hand & Card Variables
-    private int holeCard = 0;    // Specifically for dealer
+    public int holeCard = 0;    // Specifically for dealer
     public List<int> handValues = new List<int> {0};
     public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()};
     public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
@@ -23,35 +23,33 @@ public class PlayerScript : MonoBehaviour
     public int cardsIndex = 0;  // Index of next card to be revealed
 
     // Betting Variables
-    private int balance = 500;
-    private int bet = 0;
+    private float balance = 5000f;
 
-    // Array of card objects on table
-    public GameObject[] hand;
-    // Tracking aces for 1 to 11 conversions
-    List<CardScript> aceList = new List<CardScript>();
+    // Distringuish type of player
+    public void SetPlayerType(string type) {
+        playerType = type;
+    }
 
     // Deal starting hand (hands[0])
     public void DealHand() {
         CardScript card1 = GetCard(0);
         CardScript card2 = GetCard(0);
-        hands[0].Add(card1)
-        hands[0].Add(card2)
+        hands[0].Add(card1);
+        hands[0].Add(card2);
 
         // Specific to dealer
         if (playerType == "dealer") {
-            holeCard = card2.GetValue()
-            handValues[handIndex] -= holeCard
+            holeCard = card2.GetValue();
+            handValues[0] -= holeCard;
         } 
     }
 
-    // Returns the value of a given hand
-    public int GetHandValue(List<CardScript> hand) {
-        value = 0;
-        foreach (CardScript card in hand) {
-            value += card.GetValue();
+    // Check if player/dealer has blackjack
+    public bool HasBlackjack() {
+        if ((handValues.Count == 1) && (handValues[0] + holeCard == 21)) {
+            return true;
         }
-        return value;
+        return false;
     }
 
     // Get a card and add it to hands[handindex]
@@ -63,19 +61,21 @@ public class PlayerScript : MonoBehaviour
 
         // Handle Aces
         if (card.GetValue() == 1) { 
-            handsAces[handIndex].Add(card)
+            handsAces[handIndex].Add(card);
         }
         handValue = AceConverter(handIndex, handValue);
 
-        // Update handValues and show card
+        // Update handValues/hands and show card
         handValues[handIndex] = handValue;
+        hands[handIndex].Add(card);
+        print(hands);
         cards[cardsIndex].GetComponent<Renderer>().enabled = true;
         cardsIndex++;
         return card;
     }
 
     // Search for needed ace conversions, 1 to 11 or vice versa
-    public int AceConverter(int handIndex, int handValue) {
+    private int AceConverter(int handIndex, int handValue) {
         foreach (CardScript ace in handsAces[handIndex]) {
             // if converting, adjust card object value and hand
             if (ace.GetValue() == 1 && handValue + 10 < 22) {
@@ -86,21 +86,26 @@ public class PlayerScript : MonoBehaviour
                 handValue -= 10;
             }
         }
-        return handValue
+        return handValue;
     }
 
     public void SplitHand(int handIndex) {
-        hands.Add(new List<CardScript>())
-        CardScript card = hands[handIndex][1]
+        hands.Add(new List<CardScript>());
+        handsAces.Add(new List<CardScript>());
+        CardScript card = hands[handIndex][1];
 
         // Make a new hand in hands
         // Remove one of the cards from the first hand and add it to the second
-        // play out first hand as normal, play out second hand as normal 
+        hands[handIndex].RemoveAt(1);
+        hands[handIndex].Add(card);
+        // play out first hand as normal, play out second hand as normal
+        GetCard(handIndex);
+        GetCard(handIndex + 1);
     }
 
     // Balance Accessor Functions
-    public int GetBalance() { return balance; }
-    public void AdjustBalance(int amount) { balance += amount; }
+    public float GetBalance() { return balance; }
+    public void AdjustBalance(float amount) { balance += amount; }
 
     // Hole Card Accessor Functions
     public int GetHoleCard() { return holeCard; }
@@ -110,24 +115,17 @@ public class PlayerScript : MonoBehaviour
 
     }
 
-
-    // 
-    public void SetPlayerType(string type) {
-        playerType = type
-    }
-
-
     // Hides all cards, resets the needed variables
-    public void ResetHand()
-    {
-        for (int i = 0; i < hand.Length; i++)
+    public void ResetHand() {
+        for (int i = 0; i < cards.Length; i++)
         {
-            hand[i].GetComponent<CardScript>().ResetCard();
-            hand[i].GetComponent<Renderer>().enabled = false;
+            cards[i].GetComponent<CardScript>().ResetCard();
+            cards[i].GetComponent<Renderer>().enabled = false;
         }
-        cardIndex = 0;
-        handValue = 0;
-        totalHands = 0;
-        aceList = new List<CardScript>();
+        holeCard = 0;
+        handValues = new List<int> {0};
+        hands = new  List<List<CardScript>> {new List<CardScript>()};
+        handsAces = new  List<List<CardScript>> {new List<CardScript>()};
+        cardsIndex = 0;
     }
 }
