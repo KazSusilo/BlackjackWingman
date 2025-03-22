@@ -13,13 +13,19 @@ public class PlayerScript : MonoBehaviour
     private string playerType = "player";
 
     // Hand & Card Variables
-    public int holeCard = 0;    // Specifically for dealer
+    private int holeCard = 0;    // Specifically for dealer
     public List<int> handValues = new List<int> {0};
     public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()};
     public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
 
     // Pre-defined array of card objects on table to be revealed
     public GameObject[] cards;
+    public GameObject[] cards1;
+    public GameObject[] cards2;
+    public GameObject[] cards3;
+    public GameObject[] cards4;
+    public List<CardScript> cards5 = new List<CardScript>();
+    public List<GameObject[]> cardsM;
     public int cardsIndex = 0;  // Index of next card to be revealed
 
     // Betting Variables
@@ -30,12 +36,23 @@ public class PlayerScript : MonoBehaviour
         playerType = type;
     }
 
+    private void SetCardsM() {
+        /*
+        for (int i = 0; i < 14; i++) {
+            cardsM[0].Add(cards1[i]);
+            cardsM[1,i] = cards1[i];
+            cardsM[2,i] = cards1[i];
+            cardsM[3,i] = cards1[i];
+        }
+        */
+    }
+
     // Deal starting hand (hands[0])
     public void DealHand() {
+        //SetCardsM();
+
         CardScript card1 = GetCard(0);
         CardScript card2 = GetCard(0);
-        hands[0].Add(card1);
-        hands[0].Add(card2);
 
         // Specific to dealer
         if (playerType == "dealer") {
@@ -46,7 +63,7 @@ public class PlayerScript : MonoBehaviour
 
     // Check if player/dealer has blackjack
     public bool HasBlackjack() {
-        if ((handValues.Count == 1) && (handValues[0] + holeCard == 21)) {
+        if ((handValues.Count == 1) && (hands[0].Count == 2) && (handValues[0] + holeCard == 21)) {
             return true;
         }
         return false;
@@ -68,7 +85,6 @@ public class PlayerScript : MonoBehaviour
         // Update handValues/hands and show card
         handValues[handIndex] = handValue;
         hands[handIndex].Add(card);
-        print(hands);
         cards[cardsIndex].GetComponent<Renderer>().enabled = true;
         cardsIndex++;
         return card;
@@ -90,6 +106,7 @@ public class PlayerScript : MonoBehaviour
     }
 
     public void SplitHand(int handIndex) {
+        //handValues.Add(handValues[0] / 2)
         hands.Add(new List<CardScript>());
         handsAces.Add(new List<CardScript>());
         CardScript card = hands[handIndex][1];
@@ -106,14 +123,9 @@ public class PlayerScript : MonoBehaviour
     // Balance Accessor Functions
     public float GetBalance() { return balance; }
     public void AdjustBalance(float amount) { balance += amount; }
-
+    
     // Hole Card Accessor Functions
     public int GetHoleCard() { return holeCard; }
-
-    // Increase player's total hands (splitting)
-    public void AddHand() {
-
-    }
 
     // Hides all cards, resets the needed variables
     public void ResetHand() {
