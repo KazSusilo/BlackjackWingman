@@ -19,13 +19,11 @@ public class PlayerScript : MonoBehaviour
     public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
 
     // Pre-defined array of card objects on table to be revealed
-    public GameObject[] cards;
     public GameObject[] cards1;
     public GameObject[] cards2;
     public GameObject[] cards3;
     public GameObject[] cards4;
-    public List<CardScript> cards5 = new List<CardScript>();
-    public List<GameObject[]> cardsM;
+    public List<GameObject[]> cardsM = new List<GameObject[]>();
     public int cardsIndex = 0;  // Index of next card to be revealed
 
     // Betting Variables
@@ -34,23 +32,18 @@ public class PlayerScript : MonoBehaviour
     // Distringuish type of player
     public void SetPlayerType(string type) {
         playerType = type;
-    }
+        cardsM.Add(cards1);
 
-    private void SetCardsM() {
-        /*
-        for (int i = 0; i < 14; i++) {
-            cardsM[0].Add(cards1[i]);
-            cardsM[1,i] = cards1[i];
-            cardsM[2,i] = cards1[i];
-            cardsM[3,i] = cards1[i];
+        // Specific to player
+        if (playerType == "player") {
+            cardsM.Add(cards2);
+            cardsM.Add(cards3);
+            cardsM.Add(cards4);
         }
-        */
     }
 
     // Deal starting hand (hands[0])
     public void DealHand() {
-        //SetCardsM();
-
         CardScript card1 = GetCard(0);
         CardScript card2 = GetCard(0);
 
@@ -72,7 +65,7 @@ public class PlayerScript : MonoBehaviour
     // Get a card and add it to hands[handindex]
     public CardScript GetCard(int handIndex) {
         // Get a card, use deal card to assign sprite and value to card
-        CardScript card = deckScript.DealCard(cards[cardsIndex].GetComponent<CardScript>());
+        CardScript card = deckScript.DealCard(cardsM[handIndex][cardsIndex].GetComponent<CardScript>());
         int handValue = handValues[handIndex];
         handValue += card.GetValue();
 
@@ -85,7 +78,7 @@ public class PlayerScript : MonoBehaviour
         // Update handValues/hands and show card
         handValues[handIndex] = handValue;
         hands[handIndex].Add(card);
-        cards[cardsIndex].GetComponent<Renderer>().enabled = true;
+        cardsM[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
         cardsIndex++;
         return card;
     }
@@ -129,10 +122,21 @@ public class PlayerScript : MonoBehaviour
 
     // Hides all cards, resets the needed variables
     public void ResetHand() {
-        for (int i = 0; i < cards.Length; i++)
-        {
-            cards[i].GetComponent<CardScript>().ResetCard();
-            cards[i].GetComponent<Renderer>().enabled = false;
+        for (int i = 0; i < cards1.Length; i++) {
+            // Hand 1
+            cardsM[0][i].GetComponent<CardScript>().ResetCard();
+            cardsM[0][i].GetComponent<Renderer>().enabled = false;
+            if (playerType == "player") {   // Specific to player
+                // Hand 2
+                cardsM[1][i].GetComponent<CardScript>().ResetCard();
+                cardsM[1][i].GetComponent<Renderer>().enabled = false;
+                // Hand 3
+                cardsM[2][i].GetComponent<CardScript>().ResetCard();
+                cardsM[2][i].GetComponent<Renderer>().enabled = false;
+                // Hand 4
+                cardsM[3][i].GetComponent<CardScript>().ResetCard();
+                cardsM[3][i].GetComponent<Renderer>().enabled = false;
+            }
         }
         holeCard = 0;
         handValues = new List<int> {0};
