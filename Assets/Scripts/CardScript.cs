@@ -7,30 +7,23 @@ public class CardScript : MonoBehaviour
     // Value of card, 2 of spades = 2, etc
     private int value = 0;
 
-    public int GetValue() 
-    {
+    // Get the value of card
+    public int GetValue() {
         return value;
     }
 
-    public void SetValue(int newValue)
-    {
+    // Set value of card 
+    public void SetValue(int newValue) {
         value = newValue;
     }
 
-    /*
-    public string GetSpriteName()
-    {
-        return GetComponent<SpriteRenderer>().sprite.name;
-    }
-    */
-
-    public void SetSprite(Sprite newSprite)
-    {
+    // Set sprite of card gameObject to 'newSprite'
+    public void SetSprite(Sprite newSprite) {
         gameObject.GetComponent<SpriteRenderer>().sprite = newSprite;
     }
 
-    public void ResetCard()
-    {
+    // Reset sprite and value from card gameObject
+    public void ResetCard() {
         Sprite backOfCard = GameObject.Find("Deck").GetComponent<DeckScript>().GetBackOfCard();
         gameObject.GetComponent<SpriteRenderer>().sprite = backOfCard;
         value = 0;
