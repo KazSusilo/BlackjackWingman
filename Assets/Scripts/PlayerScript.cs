@@ -100,15 +100,17 @@ public class PlayerScript : MonoBehaviour
 
     // Split hand
     public void SplitHand(int handIndex) {
-        // Get card to split off     
-        CardScript card = hands[handIndex][1];    
-        int cardValue = card.GetValue();
-
         // Create new hand
         hands.Add(new List<CardScript>());
         handsAces.Add(new List<CardScript>());
         handValues.Add(0);
+
+        // Get card to split off     
         int newHandIndex = handValues.Count - 1;
+        CardScript sourceCard = hands[handIndex][1];
+        CardScript targetCard = cardsM[newHandIndex][0].GetComponent<CardScript>();
+        CardScript card = deckScript.CopyCard(sourceCard, targetCard);    
+        int cardValue = card.GetValue();
 
         // Split cards into two hands
         hands[handIndex].RemoveAt(1);
@@ -119,31 +121,15 @@ public class PlayerScript : MonoBehaviour
             handsAces[newHandIndex].Add(card);
         }
 
-        // Set sprite 
         // New Hand
         handValues[newHandIndex] += cardValue;
-        deckScript.CopyPreviousCard(card, cardsM[newHandIndex][0].GetComponent<CardScript>());
         cardsM[newHandIndex][0].GetComponent<Renderer>().enabled = true;
 
         // OG Hand
         handValues[handIndex] -= cardValue;
-        print(handValues[handIndex]);
-        card.ResetCard();
+        sourceCard.ResetCard();
         cardsM[handIndex][0].GetComponent<Renderer>().enabled = true;
         cardsIndex--;
-        
-
-        /*
-        // Swap sprite of cards
-        Sprite tempCard = deck[i];
-        deck[i] = deck[j];
-        deck[j] = tempCard;
-
-        // Swap value of cards
-        int tempValue = cardValues[i];
-        cardValues[i] = cardValues[j];
-        cardValues[j] = tempValue;
-        */
 
         // Populate both hands
         GetCard(newHandIndex);

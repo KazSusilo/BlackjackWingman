@@ -20,7 +20,8 @@ public class GameManager : MonoBehaviour
     // Player 
     public PlayerScript player;
     private int handIndex = 0;
-    private float betAmount = 500f;
+    private List<float> bets = new List<float> {500f};
+    private float originalBet = 500f;
 
     // Dealer
     public PlayerScript dealer;
@@ -73,10 +74,18 @@ public class GameManager : MonoBehaviour
         int intBet = int.Parse(newBet.text.ToString());
         player.AdjustBalance(-intBet);
         playerBalance.text = player.GetBalance().ToString();
-        betAmount += intBet;
-        playerBet.text = betAmount.ToString();
+        bets[handIndex] += intBet;
+        playerBet.text = totalBet().ToString();
 
         // Open Chips to select from 
+    }
+
+    private float totalBet() {
+        float total = 0f;
+        foreach (float bet in bets) {
+            total += bet;
+        }
+        return total;
     }
 
     // Deal initial cards to both player and dealer
@@ -85,8 +94,8 @@ public class GameManager : MonoBehaviour
         
         // Close Betting
         CloseBetting();
-        playerBet.text = "Bet: " + betAmount.ToString();
-        player.AdjustBalance(-betAmount);
+        player.AdjustBalance(-bets[handIndex]);
+        playerBet.text = "Bet: " + totalBet().ToString();
         playerBalance.text = "Balance: " + player.GetBalance().ToString();
              
         // Deal cards to player
@@ -105,11 +114,11 @@ public class GameManager : MonoBehaviour
         dealButton.gameObject.SetActive(false);
         hitButton.gameObject.SetActive(true);
         standButton.gameObject.SetActive(true);
-        SetAvailableActions(player.hands[handIndex]);
+        SetAvailableActions(handIndex);
 
         // Check for BJ
         if (player.HasBlackjack() || dealer.HasBlackjack()) {
-            RoundOver();
+            StandClicked();
         }
     }
 
@@ -118,6 +127,7 @@ public class GameManager : MonoBehaviour
         roundText.gameObject.SetActive(false);
         player.ResetHand();
         handIndex = 0;
+        bets = new List<float> {500f};
         dealer.ResetHand();
 
         playerHandValues[1].gameObject.SetActive(false);
@@ -132,19 +142,27 @@ public class GameManager : MonoBehaviour
     }
 
     // Enable appropriate action buttons on player's turn
-    private void SetAvailableActions(List<CardScript> hand) {
+    private void SetAvailableActions(int handIndex) {
+        // Edge case if hand is already perfect
+        if (handIndex < player.handValues.Count && player.handValues[handIndex] == 21) {
+            StandClicked();
+            return;
+        }
+
+        List<CardScript> hand = player.hands[handIndex];
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
 
+
         // Check if the player can double
-        if (hand.Count == 2 && SufficientFunds(betAmount)) {
+        if (hand.Count == 2 && SufficientFunds(bets[handIndex])) {
             doubleButton.gameObject.SetActive(true);
             
             // Check if the player can split
             int card1 = hand[0].GetValue();
             int card2 = hand[1].GetValue();
             // Dynamically change what handIndex is less than for max split hands
-            if (((card1 == card2) || ((card1 == 1 || card1 == 11) && (card2 == 1 || card2 == 11))) && handIndex < 4) {
+            if (((card1 == card2) || ((card1 == 1 || card1 == 11) && (card2 == 1 || card2 == 11))) && player.handValues.Count < 4) {
                 splitButton.gameObject.SetActive(true);
             }
         }
@@ -164,8 +182,8 @@ public class GameManager : MonoBehaviour
         if (player.cardsIndex <= 14) {
             player.GetCard(handIndex);
             playerHandValues[handIndex].text = player.handValues[handIndex].ToString();
-            SetAvailableActions(player.hands[handIndex]);
-            if (player.handValues[handIndex] > 20) {
+            SetAvailableActions(handIndex);
+            if (handIndex < player.handValues.Count && player.handValues[handIndex] > 21) {
                 StandClicked();
             }
         }
@@ -174,8 +192,6 @@ public class GameManager : MonoBehaviour
     private void StandClicked() {
         playerHandIndicators[handIndex].gameObject.SetActive(false);
         handIndex++;
-        print("handIndex: " + handIndex);
-        print("HandCount: " + player.hands.Count);
         
         // Check if no more hands to be played
         if (handIndex == player.hands.Count) {  
@@ -184,14 +200,14 @@ public class GameManager : MonoBehaviour
         } 
         player.cardsIndex = 2; // Next card to be flipped over in new hand
         playerHandIndicators[handIndex].gameObject.SetActive(true);
-        SetAvailableActions(player.hands[handIndex]);
+        SetAvailableActions(handIndex);
     }
 
     private void SplitClicked() {
         // Add another bet for other hand
-        player.AdjustBalance(-betAmount);
-        betAmount *= 2;
-        playerBet.text = "Bet: " + betAmount.ToString();
+        player.AdjustBalance(-bets[handIndex]);
+        bets.Add(bets[handIndex]);
+        playerBet.text = "Bet: " + totalBet().ToString();
         playerBalance.text = "Balance: " + player.GetBalance().ToString();
         
         player.SplitHand(handIndex);
@@ -199,18 +215,31 @@ public class GameManager : MonoBehaviour
         playerHandValues[handIndex].text = player.handValues[handIndex].ToString();
         playerHandValues[newHandIndex].text = player.handValues[newHandIndex].ToString();
         playerHandValues[newHandIndex].gameObject.SetActive(true);
+
+        SetAvailableActions(handIndex);
+        if (player.handValues[handIndex] == 21) {
+            StandClicked();
+        }
+
+        foreach (List<CardScript> hand in player.hands) {
+            print("Hand (i) : ");
+            foreach (CardScript card in hand) {
+                print(card.GetValue());
+            }
+        }
     }
 
     private void DoubleClicked() {
         // Take original bet and double it
-        player.AdjustBalance(-betAmount);
-        betAmount *= 2;
-        playerBet.text = "Bet: " + betAmount.ToString();
+        player.AdjustBalance(-bets[handIndex]);
+        bets[handIndex] *= 2;
+        playerBet.text = "Bet: " + totalBet().ToString();
         playerBalance.text = "Balance: " + player.GetBalance().ToString();
 
+        int prevHandIndex = handIndex;
         HitClicked();
         // Avoid an extra StandClicked if already occured in HitClicked()
-        if (handIndex < player.hands.Count && player.handValues[handIndex] < 20) {    
+        if (prevHandIndex == handIndex) {    
             StandClicked();
         }
     }
@@ -228,7 +257,6 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
-        playerHandIndicators[handIndex].gameObject.SetActive(false);
     }
 
     private void CloseBetting() {
@@ -263,12 +291,12 @@ public class GameManager : MonoBehaviour
         while (handIndex < player.handValues.Count) {
             int handValue = player.handValues[handIndex];
             bool playerBust = 21 < handValue;
+            reward = 0;
 
             if (playerBJ && !dealerBJ) {
                 roundText.text = "Blackjack";
                 playerHandValues[handIndex].text = "BJ";
-                reward = (2.5f * betAmount);
-                player.AdjustBalance(2.5f * betAmount);
+                reward = (2.5f * bets[handIndex]);
             }
             // if player busts or player hand < dealer hand, player loses
             else if (playerBust ||  ((!dealerBust) && (handValue < dealer.handValues[0]))) {
@@ -277,14 +305,13 @@ public class GameManager : MonoBehaviour
             // if dealer busts or player hand > dealer hand, player wins
             else if (dealerBust || ((!playerBust) && (dealer.handValues[0] < handValue))) {
                 roundText.text = "Win";
-                reward = (2 * betAmount);
-                player.AdjustBalance(2 * betAmount);
+                reward = (2 * bets[handIndex]);
             }
             else if (handValue == dealer.handValues[0]) {
                 roundText.text = "Push";
-                reward = (betAmount);
-                player.AdjustBalance(betAmount);
+                reward = (bets[handIndex]);
             }
+            player.AdjustBalance(reward);
             handIndex++;
         }
 

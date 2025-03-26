@@ -58,10 +58,11 @@ public class DeckScript : MonoBehaviour
         return card;
     }
 
-    // Copy previous card dealt to card
-    public void CopyPreviousCard(CardScript sourceCard, CardScript targetCard) {
+    // Copy sourceCard to targetCard
+    public CardScript CopyCard(CardScript sourceCard, CardScript targetCard) {
         targetCard.SetSprite(sourceCard.gameObject.GetComponent<SpriteRenderer>().sprite);
         targetCard.SetValue(sourceCard.GetValue());
+        return targetCard;
     }
 
     public Sprite GetBackOfCard()
