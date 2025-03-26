@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text playerBet; 
     public TMP_Text playerHandValue;
     public TMP_Text [] playerHandValues;
+    public TMP_Text [] playerHandIndicators;
     public TMP_Text dealerHandValue;
     public TMP_Text roundText;  // ("Win", "Lose", "Push", etc)
     
@@ -92,6 +93,7 @@ public class GameManager : MonoBehaviour
         player.DealHand();
         playerHandValues[0].text = player.handValues[0].ToString();
         playerHandValues[0].gameObject.SetActive(true);
+        playerHandIndicators[0].gameObject.SetActive(true);
         
         // Deal cards to dealer
         dealer.DealHand();
@@ -118,6 +120,10 @@ public class GameManager : MonoBehaviour
         handIndex = 0;
         dealer.ResetHand();
 
+        playerHandValues[1].gameObject.SetActive(false);
+        playerHandValues[2].gameObject.SetActive(false);
+        playerHandValues[3].gameObject.SetActive(false);
+
         // Shuffle shoe if cut card is reached 
         // (NEED TO CHANGE HARD CODED CUT CARD)
         if (deck.currentIndex >= 42) {
@@ -137,7 +143,8 @@ public class GameManager : MonoBehaviour
             // Check if the player can split
             int card1 = hand[0].GetValue();
             int card2 = hand[1].GetValue();
-            if ((card1 == card2) || ((card1 == 1 || card1 == 11) && (card2 == 1 || card2 == 11))) {
+            // Dynamically change what handIndex is less than for max split hands
+            if (((card1 == card2) || ((card1 == 1 || card1 == 11) && (card2 == 1 || card2 == 11))) && handIndex < 4) {
                 splitButton.gameObject.SetActive(true);
             }
         }
@@ -164,15 +171,34 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void StandClicked() { 
+    private void StandClicked() {
+        playerHandIndicators[handIndex].gameObject.SetActive(false);
         handIndex++;
-        if (handIndex == player.hands.Count) {
+        print("handIndex: " + handIndex);
+        print("HandCount: " + player.hands.Count);
+        
+        // Check if no more hands to be played
+        if (handIndex == player.hands.Count) {  
             RoundOver();
-        }
+            return;
+        } 
+        player.cardsIndex = 2; // Next card to be flipped over in new hand
+        playerHandIndicators[handIndex].gameObject.SetActive(true);
+        SetAvailableActions(player.hands[handIndex]);
     }
 
     private void SplitClicked() {
+        // Add another bet for other hand
+        player.AdjustBalance(-betAmount);
+        betAmount *= 2;
+        playerBet.text = "Bet: " + betAmount.ToString();
+        playerBalance.text = "Balance: " + player.GetBalance().ToString();
+        
         player.SplitHand(handIndex);
+        int newHandIndex = player.handValues.Count - 1;
+        playerHandValues[handIndex].text = player.handValues[handIndex].ToString();
+        playerHandValues[newHandIndex].text = player.handValues[newHandIndex].ToString();
+        playerHandValues[newHandIndex].gameObject.SetActive(true);
     }
 
     private void DoubleClicked() {
@@ -183,7 +209,10 @@ public class GameManager : MonoBehaviour
         playerBalance.text = "Balance: " + player.GetBalance().ToString();
 
         HitClicked();
-        StandClicked();
+        // Avoid an extra StandClicked if already occured in HitClicked()
+        if (handIndex < player.hands.Count && player.handValues[handIndex] < 20) {    
+            StandClicked();
+        }
     }
 
     private void HitDealer() {
@@ -199,6 +228,7 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
+        playerHandIndicators[handIndex].gameObject.SetActive(false);
     }
 
     private void CloseBetting() {

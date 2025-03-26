@@ -98,19 +98,57 @@ public class PlayerScript : MonoBehaviour
         return handValue;
     }
 
+    // Split hand
     public void SplitHand(int handIndex) {
-        //handValues.Add(handValues[0] / 2)
+        // Get card to split off     
+        CardScript card = hands[handIndex][1];    
+        int cardValue = card.GetValue();
+
+        // Create new hand
         hands.Add(new List<CardScript>());
         handsAces.Add(new List<CardScript>());
-        CardScript card = hands[handIndex][1];
+        handValues.Add(0);
+        int newHandIndex = handValues.Count - 1;
 
-        // Make a new hand in hands
-        // Remove one of the cards from the first hand and add it to the second
+        // Split cards into two hands
         hands[handIndex].RemoveAt(1);
-        hands[handIndex].Add(card);
-        // play out first hand as normal, play out second hand as normal
+        hands[newHandIndex].Add(card);
+        // Check if card is ace to add it to handsAces
+        if (cardValue == 1 || cardValue == 11) {
+            handsAces[handIndex].RemoveAt(1);
+            handsAces[newHandIndex].Add(card);
+        }
+
+        // Set sprite 
+        // New Hand
+        handValues[newHandIndex] += cardValue;
+        deckScript.CopyPreviousCard(card, cardsM[newHandIndex][0].GetComponent<CardScript>());
+        cardsM[newHandIndex][0].GetComponent<Renderer>().enabled = true;
+
+        // OG Hand
+        handValues[handIndex] -= cardValue;
+        print(handValues[handIndex]);
+        card.ResetCard();
+        cardsM[handIndex][0].GetComponent<Renderer>().enabled = true;
+        cardsIndex--;
+        
+
+        /*
+        // Swap sprite of cards
+        Sprite tempCard = deck[i];
+        deck[i] = deck[j];
+        deck[j] = tempCard;
+
+        // Swap value of cards
+        int tempValue = cardValues[i];
+        cardValues[i] = cardValues[j];
+        cardValues[j] = tempValue;
+        */
+
+        // Populate both hands
+        GetCard(newHandIndex);
+        cardsIndex--;
         GetCard(handIndex);
-        GetCard(handIndex + 1);
     }
 
     // Balance Accessor Functions
