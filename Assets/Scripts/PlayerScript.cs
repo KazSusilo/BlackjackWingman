@@ -85,7 +85,7 @@ public class PlayerScript : MonoBehaviour {
         }
 
         // Convert aces to maximize hand without busting
-        handValue = AceConverter(int handIndex, int handValue);
+        handValue = AceConverter(handIndex, handValue);
 
         // Update master
         handValues[handIndex] = handValue;
@@ -124,16 +124,15 @@ public class PlayerScript : MonoBehaviour {
 
     // Check if player/dealer has blackjack
     private bool HasBlackjack() {
-        if ((handValues.Count == 1) && (hands[0].Count == 2) && (handValues[0] + holeCard == 21)) {
+        int numOfHands = handValues.Count;
+        int numOfCards = hands[0].Count;
+        int handValue = handValues[0] + holeCard;
+        if ((numOfHands == 1) && (numOfCards == 2) && (handValue == 21)) {
             handTypes[0] = "BJ" // Update handType
             return true;
         }
         return false;
     }
-
-    
-
-    
 
     // Split hand
     public void SplitHand(int handIndex) {
