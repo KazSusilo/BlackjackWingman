@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class CardScript : MonoBehaviour {
+    // --- This script is specific to the 'card' object
+
+    // Access other script
+    public DeckScript deckScript;
+    public ShoeScript shoeScript;
+
     // Value of card, 2 of spades = 2, etc
     private int value = 0;
 
@@ -18,7 +24,9 @@ public class CardScript : MonoBehaviour {
 
     // Reset sprite and value from card gameObject
     public void ResetCard() {
-        Sprite backOfCard = GameObject.Find("Deck").GetComponent<DeckScript>().GetBackOfCard();
+        // Sprite backOfCard = GameObject.Find("Deck").GetComponent<DeckScript>().GetBackOfCard();
+        Sprite backOfCard = deckScript.GetBackOfCard();
+        // Sprite backOfCard = shoeScript.GetBackOfCard();
         gameObject.GetComponent<SpriteRenderer>().sprite = backOfCard;
         value = 0;
     }

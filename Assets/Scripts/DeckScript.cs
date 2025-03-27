@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class DeckScript : MonoBehaviour {
-    public Sprite[] deck;
+    // --- This script sets sprites and values of cards
+
+    public Sprite[] deck;   // Pre-defined array of sprites set in Unity
     int[] cardValues = new int[53];
     public int deckIndex = 0;
 
