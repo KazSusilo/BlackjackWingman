@@ -100,9 +100,9 @@ public class GameManager : MonoBehaviour
              
         // Deal cards to player
         player.DealHand();
-        playerHandValues[0].text = player.handValues[0].ToString();
-        playerHandValues[0].gameObject.SetActive(true);
-        playerHandIndicators[0].gameObject.SetActive(true);
+        playerHandValues[handIndex].text = player.handValues[handIndex].ToString();
+        playerHandValues[handIndex].gameObject.SetActive(true);
+        playerHandIndicators[handIndex].gameObject.SetActive(true);
         
         // Deal cards to dealer
         dealer.DealHand();
@@ -116,8 +116,14 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(true);
         SetAvailableActions(handIndex);
 
+        // Offer insurance
+        if (dealer.handValues[handIndex] == 11) {
+            // do something
+        }
+
         // Check for BJ (check handType instead)
-        if (player.HasBlackjack() || dealer.HasBlackjack()) {
+
+        if (player.handTypes[handIndex] == 'BJ' || dealer.HasBlackjack()) {
             StandClicked();
         }
     }
