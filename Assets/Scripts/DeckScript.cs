@@ -47,7 +47,7 @@ public class DeckScript : MonoBehaviour {
         deckIndex = 1;   // index0 = back of card
     }
 
-    // Deals card in 'card' slot on table
+    // Deals the top card of the shoe and assigns to the given 'card'
     public CardScript DealCard(CardScript card) {
         card.SetSprite(deck[deckIndex]);
         card.SetValue(cardValues[deckIndex]);

@@ -50,7 +50,7 @@ public class ShoeScript : MonoBehaviour {
         shoeIndex = 1;   // shoe[0] = back of card
     }
 
-    // Deal card in given 'card' slot on table
+    // Deals the top card of the shoe and assigns to the given 'card'
     public CardScript DealCard(CardScript card) {
         card.SetSprite(shoe[shoeIndex]);
         card.SetValue(cardValues[shoeIndex]);
