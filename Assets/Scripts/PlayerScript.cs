@@ -17,14 +17,14 @@ public class PlayerScript : MonoBehaviour {
     // Hand variables
     private int holeCard = 0;               // Specifically for dealer
     public List<int> handValues = new List<int> {0};
-    public List<string> handTypes = new List<char> {'H'};
+    public List<string> handTypes = new List<string> {'H'};
     public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()}; 
     public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
     // Ex. Situation:   [   h1(A,J),    h2(9,A),        h3(2,5,6,3),        h4(A,A,A,Q)         ]
     // handValues   =   [   21,         20,             16,                 13                  ]
     // handTypes    =   [   'BJ',       'S',            'H',                'H'                 ]
     // hands        =   [   h1(c1,c2),  h2(c1, c2),     h3(c1,c2,c3,c4),    h4(c1,c2,c3,c4)     ]
-    // handsAces    =   [   h1(A1),     h2(A1),         h3(),               h4(A1,A2)           ]
+    // handsAces    =   [   h1(A1),     h2(A1),         h3(),               h4(A1,A2,A3)        ]
 
     // Array of card objects on table to be revealed
     public GameObject[] cards1; // pre-defined in Unity editor
@@ -114,7 +114,7 @@ public class PlayerScript : MonoBehaviour {
         }
 
         // Indicate Hard or Soft hand
-        handTypes[handIndex] = "H";
+        handTypes[handIndex] = 'H';
         if (softHand) {
             handTypes[handIndex] = 'S';
         }
