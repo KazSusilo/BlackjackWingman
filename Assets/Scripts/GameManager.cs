@@ -47,8 +47,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         deck.Shuffle();
-        player.InitializePlayerType("player");
-        dealer.InitializePlayerType("dealer");
+        player.InitializePlayerType(true);  // isPlayer = true
+        dealer.InitializePlayerType(false); // isPlayer = false
 
         // Listener for Buttons
         dealButton.onClick.AddListener(() => DealClicked());
