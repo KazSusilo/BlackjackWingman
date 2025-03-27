@@ -47,8 +47,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start() {
         deck.Shuffle();
-        player.SetPlayerType("player");
-        dealer.SetPlayerType("dealer");
+        player.InitializePlayerType("player");
+        dealer.InitializePlayerType("dealer");
 
         // Listener for Buttons
         dealButton.onClick.AddListener(() => DealClicked());
@@ -116,7 +116,7 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(true);
         SetAvailableActions(handIndex);
 
-        // Check for BJ
+        // Check for BJ (check handType instead)
         if (player.HasBlackjack() || dealer.HasBlackjack()) {
             StandClicked();
         }

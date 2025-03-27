@@ -2,101 +2,138 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerScript : MonoBehaviour
-{
+public class PlayerScript : MonoBehaviour {
     // --- This script is for BOTH player and dealer
 
-    // Other Scripts
+    // Access other scripts
     public CardScript cardScript;
     public DeckScript deckScript;
-    
-    private string playerType = "player";
+    public ShoeScript shoeScript;
 
-    // Hand & Card Variables
-    private int holeCard = 0;    // Specifically for dealer
-    public List<int> handValues = new List<int> {0};
-    public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()};
-    public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
-
-    // Pre-defined array of card objects on table to be revealed
-    public GameObject[] cards1;
-    public GameObject[] cards2;
-    public GameObject[] cards3;
-    public GameObject[] cards4;
-    public List<GameObject[]> cardsM = new List<GameObject[]>();
-    public int cardsIndex = 0;  // Index of next card to be revealed
-
-    // Betting Variables
+    // Player variables
+    private string playerType = "player";   // "player" || "dealer"
     private float balance = 5000f;
+    
+    // Hand variables
+    private int holeCard = 0;               // Specifically for dealer
+    public List<int> handValues = new List<int> {0};
+    public List<string> handTypes = new List<char> {'H'};
+    public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()}; 
+    public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
+    // Ex. Situation:   [   h1(A,J),    h2(9,A),        h3(2,5,6,3),        h4(A,A,A,Q)         ]
+    // handValues   =   [   21,         20,             16,                 13                  ]
+    // handTypes    =   [   'BJ',       'S',            'H',                'H'                 ]
+    // hands        =   [   h1(c1,c2),  h2(c1, c2),     h3(c1,c2,c3,c4),    h4(c1,c2,c3,c4)     ]
+    // handsAces    =   [   h1(A1),     h2(A1),         h3(),               h4(A1,A2)           ]
 
-    // Distringuish type of player
-    public void SetPlayerType(string type) {
+    // Array of card objects on table to be revealed
+    public GameObject[] cards1; // pre-defined in Unity editor
+    public GameObject[] cards2; // pre-defined in Unity editor
+    public GameObject[] cards3; // pre-defined in Unity editor
+    public GameObject[] cards4; // pre-defined in Unity editor
+    public List<GameObject[]> cards = new List<GameObject[]>();         // Master array
+    public List<int[]> cardsIndexes = new List<int[]> {0, 0, 0, 0};     // Master indexes
+    
+    // Distinguish type of player
+    public void InitializePlayer(string type) {
         playerType = type;
-        cardsM.Add(cards1);
 
-        // Specific to player
+        // Set-up master array of cards
+        cards.Add(cards1);
         if (playerType == "player") {
-            cardsM.Add(cards2);
-            cardsM.Add(cards3);
-            cardsM.Add(cards4);
+            cards.Add(cards2);
+            cards.Add(cards3);
+            cards.Add(cards4);
         }
     }
 
-    // Deal starting hand (hands[0])
+    // Deal starting hand
     public void DealHand() {
+        // Add two cards to hands[0]
         CardScript card1 = GetCard(0);
         CardScript card2 = GetCard(0);
 
-        // Specific to dealer
+        // Specific to dealer - hide second card value
         if (playerType == "dealer") {
             holeCard = card2.GetValue();
             handValues[0] -= holeCard;
         } 
+
+        // Check for BJ to update handType
+        HasBlackjack();
     }
 
-    // Check if player/dealer has blackjack
-    public bool HasBlackjack() {
-        if ((handValues.Count == 1) && (hands[0].Count == 2) && (handValues[0] + holeCard == 21)) {
-            return true;
-        }
-        return false;
-    }
-
-    // Get a card and add it to hands[handindex]
+    // Add a card to current hand ( hands[handIndex] )
     public CardScript GetCard(int handIndex) {
-        // Get a card, use deal card to assign sprite and value to card
-        CardScript card = deckScript.DealCard(cardsM[handIndex][cardsIndex].GetComponent<CardScript>());
+        // Address current hand
         int handValue = handValues[handIndex];
-        handValue += card.GetValue();
+        string handType = handTypes[handIndex];
+        int hand = hands[handIndex];
+        int handAces = handsAces[handIndex];
+        int cardsIndex = cardsIndexes[handIndex];
 
-        // Handle Aces
-        if (card.GetValue() == 1) { 
-            handsAces[handIndex].Add(card);
+        // New card to be added
+        CardScript card = deckScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>())
+        //CardScript card = shoeScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>())
+        int cardValue = card.GetValue();
+        
+        // Add card to hand
+        handValue += cardValue;
+        hand.Add(card);  
+        if (cardValue == 1) {
+            handAces.Add(card)
         }
-        handValue = AceConverter(handIndex, handValue);
 
-        // Update handValues/hands and show card
+        // Convert aces to maximize hand without busting
+        handValue = AceConverter(int handIndex, int handValue);
+
+        // Update master
         handValues[handIndex] = handValue;
-        hands[handIndex].Add(card);
-        cardsM[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
-        cardsIndex++;
+        hands[handIndex] = hand;    // handTypes handled in AceConverter
+        handsAces[handIndex] = handAces;
+        cards[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
+        cardsIndexes[handIndex] = cardsIndex + 1;
+        
         return card;
     }
 
     // Search for needed ace conversions, 1 to 11 or vice versa
     private int AceConverter(int handIndex, int handValue) {
+        bool softHand = false;
         foreach (CardScript ace in handsAces[handIndex]) {
-            // if converting, adjust card object value and hand
-            if (ace.GetValue() == 1 && handValue + 10 < 22) {
+            int aceValue = ace.GetValue();
+            // if converting, adjust 'card' object value and handValue
+            if (aceValue == 1 && handValue + 10 < 22) {
                 ace.SetValue(11);
                 handValue += 10;
-            } else if (ace.GetValue() == 11 && handValue > 21) {
+                softHand = true;
+            } else if (aceValue == 11 && handValue > 21) {
                 ace.SetValue(1);
                 handValue -= 10;
             }
         }
+
+        // Indicate Hard or Soft hand
+        handTypes[handIndex] = "H";
+        if (softHand) {
+            handTypes[handIndex] = 'S';
+        }
+
         return handValue;
     }
+
+    // Check if player/dealer has blackjack
+    private bool HasBlackjack() {
+        if ((handValues.Count == 1) && (hands[0].Count == 2) && (handValues[0] + holeCard == 21)) {
+            handTypes[0] = "BJ" // Update handType
+            return true;
+        }
+        return false;
+    }
+
+    
+
+    
 
     // Split hand
     public void SplitHand(int handIndex) {
