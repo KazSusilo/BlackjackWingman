@@ -13,10 +13,6 @@ public class CardScript : MonoBehaviour {
     private int value = 0;
 
 
-    // cardValue acessor functions
-    public int GetValue() { return value; }
-    public void SetValue(int newValue) { value = newValue; }
-
     // Set sprite of card gameObject to 'newSprite'
     public void SetSprite(Sprite newSprite) {
         gameObject.GetComponent<SpriteRenderer>().sprite = newSprite;
@@ -28,6 +24,11 @@ public class CardScript : MonoBehaviour {
         Sprite backOfCard = deckScript.GetBackOfCard();
         // Sprite backOfCard = shoeScript.GetBackOfCard();
         gameObject.GetComponent<SpriteRenderer>().sprite = backOfCard;
+        gameObject.GetComponent<Renderer>().enabled = false;
         value = 0;
     }
+
+    // Accessor and mutator functions
+    public int GetValue() { return value; }
+    public void SetValue(int newValue) { value = newValue; }
 }

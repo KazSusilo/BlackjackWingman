@@ -6,9 +6,9 @@ public class ShoeScript : MonoBehaviour {
     // --- This script is related to the behaviour of 'card' objects
 
     // Dynamically set size based on game setting
-    // (x)D: 54*x + 1
     // 1D: 53, 4D: 209, 8D: 417, etc 
-    private int[] cardValues = new int[417];
+    public totalCards = 52; // Need to dynamically adjust
+    private int[] cardValues = new int[totalCards + 1]; // + 1 for back of card
     public Sprite[] shoe;   // Pre-defined array of sprites set in Unity
     public int shoeIndex = 0;
 
