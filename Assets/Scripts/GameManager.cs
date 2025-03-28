@@ -6,46 +6,62 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    // Buttons
-    public Button dealButton;
-    public Button betButton;
-    public Button hitButton;
-    public Button standButton;
-    public Button splitButton;
-    public Button doubleButton;
+    // --- This script is for managing the flow of the game
+    // Game Settings
+    private float penetration;  // 6/8
+    private bool H17;           // Hard 17 || Soft 17
+    private bool D;             // double
+    private bool DAS;           // double after splitting
+    private bool RSA;           // re-split aces
+    private int maxSplit;       // 4
+    private bool NS;            // no-surender
+    private float maxBet;       
 
-    // Deck
+    // Shoe
     public DeckScript deck;
+    public ShoeScript shoe;
+
+    // Dealer
+    public PlayerScript dealer;
+    public GameObject blinder;  // blinder hiding dealer's hole card
 
     // Player 
     public PlayerScript player;
     private int handIndex = 0;
     private List<float> bets = new List<float> {500f};
     private float originalBet = 500f;
-
-    // Dealer
-    public PlayerScript dealer;
-    public GameObject blinder;  // Blinder hiding dealer's hole card
-
-    // Game Settings
-    private float penetration; 
-    /*
-    private int maxSplit;
-    private bool surrender;
-    */
+    private float totalBet = 500f;
 
     // Player HUD
-    public TMP_Text playerBalance;
-    public TMP_Text playerBet; 
-    public TMP_Text playerHandValue;
-    public TMP_Text [] playerHandValues;
-    public TMP_Text [] playerHandIndicators;
-    public TMP_Text dealerHandValue;
-    public TMP_Text roundText;  // ("Win", "Lose", "Push", etc)
-    
+    public TMP_Text playerBalanceText;
+    public TMP_Text playerTotalBetText; 
+
+
+    public TMP_Text dealerHandValueText;              
+    public TMP_Text [] playerHandValues;        
+    public TMP_Text [] playerHandIndicators; 
+    public TMP_Text [] playerBetsText;
+
+    public TMP_Text roundText;                  // ("Win", "Lose", "Push", etc)
+    public TMP_Text rewardText;                 // how much the player wins/loses
+
+    // Action Buttons
+    public Button dealButton;
+    public Button hitButton;
+    public Button standButton;
+    public Button splitButton;
+    public Button doubleButton;
+
+    // Bet Buttons
+    public Button bet1Button;
+    public Button bet5Button;
+    public Button bet25Button;
+    public Button bet100Button;
+    public Button bet500Button;
+
 
     // Start is called before the first frame update
-    void Start() {
+    private void Start() {
         deck.Shuffle();
         player.InitializePlayerType(true);  // isPlayer = true
         dealer.InitializePlayerType(false); // isPlayer = false
@@ -53,19 +69,28 @@ public class GameManager : MonoBehaviour
         // Listener for Buttons
         dealButton.onClick.AddListener(() => DealClicked());
 
-        betButton.onClick.AddListener(() => BetClicked());
-        /*
-        bet1Button.onClick.AddListener(() => 1Clicked());
-        bet5Button.onClick.AddListener(() => 5Clicked());
-        bet25Button.onClick.AddListener(() => 25Clicked());
-        bet100Button.onClick.AddListener(() => 100Clicked());
-        bet500Button.onClick.AddListener(() => 500Clicked());
-        */
+        bet1Button.onClick.AddListener(() => BetXClicked(1));
+        bet5Button.onClick.AddListener(() => BetXClicked(5));
+        bet25Button.onClick.AddListener(() => BetXClicked(25));
+        bet100Button.onClick.AddListener(() => BetXClicked(100));
+        bet500Button.onClick.AddListener(() => BetXClicked(500));
 
         hitButton.onClick.AddListener(() => HitClicked());
         standButton.onClick.AddListener(() => StandClicked());
         splitButton.onClick.AddListener(() => SplitClicked());
         doubleButton.onClick.AddListener(() => DoubleClicked());
+    }
+
+    // Initialize table rules
+    private void InitializeGame() {
+        penetration = 6/8f;
+        H17 = false;
+        D = true;
+        DAS = true;
+        RSA = false;
+        maxSplit = 4;
+        NS = true;
+        maxBet = 1000f;
     }
 
     // Set betting amount for player
@@ -78,6 +103,30 @@ public class GameManager : MonoBehaviour
         playerBet.text = totalBet().ToString();
 
         // Open Chips to select from 
+    }
+
+    // Add xBetAmount to player Bet
+    private void BetXClicked(float xBetAmount) {
+        // Betting variables
+        bool betAllowed = true;
+        float totalBet = originalBet + xBetAmount;
+        float playerBalance = player.GetBalance();
+        
+        // Check if bet is allowed
+        if (totalBet > playerBalance) {
+            print("Insufficient funds");
+            betAllowed = false;
+        }
+        else if (totalBet > maxBet) {
+            print("Unable to surpass Max Bet");
+            betAllowed = false;
+        }
+
+        // Process bet
+        if (betAllowed) {
+            originalBet = totalBet;
+            playerBetsText = originalBet.ToString();
+        }
     }
 
     private float totalBet() {
