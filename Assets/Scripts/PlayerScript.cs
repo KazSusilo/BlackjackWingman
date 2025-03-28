@@ -138,11 +138,8 @@ public class PlayerScript : MonoBehaviour {
 
     // Split current hand
     public void SplitHand(int handIndex) {
-        // Create new hand
-        handValues.Add(0);
-        handTypes.Add('H');
-        hands.Add(new List<CardScript>());
-        handsAces.Add(new List<CardScript>());
+        // Create an additional hand
+        AddHand();
 
         // Split cards
         int currCardsIndex = cardsIndexes[handIndex];   // Index of which card should be split-off
@@ -161,6 +158,14 @@ public class PlayerScript : MonoBehaviour {
         // Deal two more cards
         GetCard(handIndex);
         GetCard(newHandIndex);
+    }
+
+    // Create an additional hand
+    private void AddHand() {
+        handValues.Add(0);
+        handTypes.Add('H');
+        hands.Add(new List<CardScript>());
+        handsAces.Add(new List<CardScript>());
     }
 
     // Helper function to remove given 'card' (last added card) from given hand (using 'handIndex')
