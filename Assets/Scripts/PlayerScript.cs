@@ -34,6 +34,7 @@ public class PlayerScript : MonoBehaviour {
     public List<GameObject[]> cards = new List<GameObject[]>();     // Master array
     public List<int> cardsIndexes = new List<int> {0, 0, 0, 0};     // Master indexes
     
+
     // Distinguish type of player
     public void InitializePlayer(bool type) {
         isPlayer = type;
@@ -57,23 +58,19 @@ public class PlayerScript : MonoBehaviour {
         if (!isPlayer) {
             holeCard = card2.GetValue();
             handValues[0] -= holeCard;
-        } 
-
-        // Check for BJ to update handType
-        HasBlackjack();
+        }
     }
 
     // Gets the top card in the shoe and adds it to the given hand (using 'handIndex')
     public CardScript GetCard(int handIndex) {
         int cardsIndex = cardsIndexes[handIndex];   // Index of where card should be placed in hand
-        CardScript card = deckScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>())
-        //CardScript card = shoeScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>())
-        AddCardToHand(card, handIndex);
+        CardScript card = shoeScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>())
+        PushPopCardToFromHand(card, handIndex, true); // push: true
         return card;
     }
 
-    // Helper function to add given 'card' to given hand (hands[handIndex])
-    private void AddCardToHand(CardScript card, int handIndex) {
+    // Add/remove given 'card' to/from given hand (hands[handIndex])
+    private void PushPopCardToFromHand(CardScript card, int handIndex, bool addCard) {
         // Address specific hand
         int handValue = handValues[handIndex];
         int hand = hands[handIndex];
@@ -81,11 +78,24 @@ public class PlayerScript : MonoBehaviour {
         int cardsIndex = cardsIndexes[handIndex];
         int cardValue = card.GetValue();    // given card's value
 
-        // Add card to hand
-        handValue += cardValue;
-        hand.Add(card);
-        if (cardValue == 1 || cardValue == 11) {
-            handAces.Add(card)
+        // Add/remove card to/from hand
+        if (addCard) {
+            handValue += cardValue;
+            hand.Add(card);
+            if (cardValue == 1 || cardValue == 11) {
+                handAces.Add(card)
+            }
+            cards[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
+            cardsIndex++;
+        }
+        else {
+            handValue -= cardValue;
+            hand.RemoveAt(hand.Count - 1);              // Removes last element
+            if (cardValue == 1 || cardValue == 11) {
+                handAces.RemoveAt(handAces.Count - 1);  // Removes last element
+            }
+            card.ResetCard();
+            cardsIndex--;
         }
         
         // Convert aces to maximize hand without busting
@@ -95,8 +105,7 @@ public class PlayerScript : MonoBehaviour {
         handValues[handIndex] = handValue;
         hands[handIndex] = hand;    // handTypes handled in AceConverter
         handsAces[handIndex] = handAces;
-        cards[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
-        cardsIndexes[handIndex] = cardsIndex + 1;
+        cardsIndexes[handIndex] = cardsIndex;
     }
 
     // Search for needed ace conversions, 1 to 11 or vice versa
@@ -125,7 +134,7 @@ public class PlayerScript : MonoBehaviour {
     }
 
     // Check if player/dealer has blackjack
-    private bool HasBlackjack() {
+    public bool HasBlackjack() {
         int numOfHands = handValues.Count;
         int numOfCards = hands[0].Count;
         int handValue = handValues[0] + holeCard;
@@ -147,13 +156,12 @@ public class PlayerScript : MonoBehaviour {
         int newCardsIndex = cardsIndexes[newHandIndex]; // Index of where card should be newly placed in hand
         CardScript currCard = hands[handIndex][currCardsIndex - 1];                         // split-off card origin
         CardScript newCard = cards[newHandIndex][newCardsIndex].GetComponent<CardScript>(); // split-off card destination
-        newCard = deckScript.CopyCard(currCard, newCard);   
-        //newCard = shoeScript.CopyCard(currCard, newCard);
+        newCard = shoeScript.CopyCard(currCard, newCard);
         
         // Add newCard to newHand
-        AddCardToHand(newCard, newHandIndex);
+        PushPopCardToFromHand(newCard, handIndex, true)   // push: true
         // Remove currCard from currHand
-        RemoveCardFromHand(currCard, handIndex)
+        PushPopCardToFromHand(currCard, handIndex, false) // pop: false
 
         // Deal two more cards
         GetCard(handIndex);
@@ -167,42 +175,6 @@ public class PlayerScript : MonoBehaviour {
         hands.Add(new List<CardScript>());
         handsAces.Add(new List<CardScript>());
     }
-
-    // Helper function to remove given 'card' (last added card) from given hand (using 'handIndex')
-    private void RemoveCardFromHand(CardScript card, int handIndex) {
-        // Address specific hand
-        int handValue = handValues[handIndex];
-        int hand = hands[handIndex];
-        int handAces = handsAces[handIndex];
-        int cardsIndex = cardsIndexes[handIndex];
-        int cardValue = card.GetValue();    // given card's value
-
-        // Remove card from hand
-        cardsIndex--; 
-        handValue -= cardValue;
-        hand.RemoveAt(cardsIndex);
-        if (cardValue == 1 || cardValue == 11) {
-            handAces.RemoveAt(cardsIndex);
-        }
-        card.ResetCard();
-        
-        // Convert aces to maximize hand without busting
-        handValue = AceConverter(hand, handValue)
-
-        // Update master
-        handValues[handIndex] = handValue;
-        hands[handIndex] = hand;    // handTypes handled in AceConverter
-        handsAces[handIndex] = handAces;
-        cards[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
-        cardsIndexes[handIndex] = cardsIndex;
-    }
-
-    // Balance Accessor Functions
-    public float GetBalance() { return balance; }
-    public void AdjustBalance(float amount) { balance += amount; }
-    
-    // Hole Card Accessor Functions
-    public int GetHoleCard() { return holeCard; }
 
     // Reset hand and card variables to initial states
     public void ResetHand() {
@@ -225,4 +197,17 @@ public class PlayerScript : MonoBehaviour {
         hands = new  List<List<CardScript>> {new List<CardScript>()};
         handsAces = new  List<List<CardScript>> {new List<CardScript>()};
     }
+
+    // Balance accessor and mutator functions
+    public float GetBalance() { return balance; }
+    public void AdjustBalance(float amount) { balance += amount; }
+    public bool HasSufficientFunds(float amount) {
+        if (balance - amount >= 0) {
+            return true;
+        }
+        return false;
+    }
+    
+    // Hole Card accessor function
+    public int GetHoleCard() { return holeCard; }
 }
