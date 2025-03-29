@@ -7,7 +7,6 @@ public class PlayerScript : MonoBehaviour {
 
     // Access other scripts
     public CardScript cardScript;
-    public DeckScript deckScript;
     public ShoeScript shoeScript;
 
     // Player variables
@@ -17,7 +16,7 @@ public class PlayerScript : MonoBehaviour {
     // Hand variables
     private int holeCard = 0;               // Specifically for dealer
     public List<int> handValues = new List<int> {0};
-    public List<string> handTypes = new List<string> {'H'};
+    public List<string> handTypes = new List<string> {"H"};
     public List<List<CardScript>> hands = new  List<List<CardScript>> {new List<CardScript>()}; 
     public List<List<CardScript>> handsAces = new  List<List<CardScript>> {new List<CardScript>()};
     // Ex. Situation:   [   h1(A,J),    h2(9,A),        h3(2,5,6,3),        h4(A,A,A,Q)         ]
@@ -36,7 +35,7 @@ public class PlayerScript : MonoBehaviour {
     
 
     // Distinguish type of player
-    public void InitializePlayer(bool type) {
+    public void InitializePlayerType(bool type) {
         isPlayer = type;
 
         // Set-up master array of cards
@@ -53,18 +52,23 @@ public class PlayerScript : MonoBehaviour {
         // Add two cards to hands[0]
         CardScript card1 = GetCard(0);
         CardScript card2 = GetCard(0);
+        int handValue = handValues[0];
 
         // Specific to dealer - hide second card value
         if (!isPlayer) {
             holeCard = card2.GetValue();
             handValues[0] -= holeCard;
         }
+
+        if (handValue == 21) {
+            handTypes[0] = "BJ";
+        }
     }
 
     // Gets the top card in the shoe and adds it to the given hand (using 'handIndex')
     public CardScript GetCard(int handIndex) {
         int cardsIndex = cardsIndexes[handIndex];   // Index of where card should be placed in hand
-        CardScript card = shoeScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>())
+        CardScript card = shoeScript.DealCard(cards[handIndex][cardsIndex].GetComponent<CardScript>());
         PushPopCardToFromHand(card, handIndex, true); // push: true
         return card;
     }
@@ -73,8 +77,8 @@ public class PlayerScript : MonoBehaviour {
     private void PushPopCardToFromHand(CardScript card, int handIndex, bool addCard) {
         // Address specific hand
         int handValue = handValues[handIndex];
-        int hand = hands[handIndex];
-        int handAces = handsAces[handIndex];
+        List<CardScript> hand = hands[handIndex];
+        List<CardScript> handAces = handsAces[handIndex];
         int cardsIndex = cardsIndexes[handIndex];
         int cardValue = card.GetValue();    // given card's value
 
@@ -83,7 +87,7 @@ public class PlayerScript : MonoBehaviour {
             handValue += cardValue;
             hand.Add(card);
             if (cardValue == 1 || cardValue == 11) {
-                handAces.Add(card)
+                handAces.Add(card);
             }
             cards[handIndex][cardsIndex].GetComponent<Renderer>().enabled = true;
             cardsIndex++;
@@ -99,7 +103,7 @@ public class PlayerScript : MonoBehaviour {
         }
         
         // Convert aces to maximize hand without busting
-        handValue = AceConverter(hand, handValue)
+        handValue = AceConverter(hand, handIndex, handValue);
 
         // Update master
         handValues[handIndex] = handValue;
@@ -108,28 +112,21 @@ public class PlayerScript : MonoBehaviour {
         cardsIndexes[handIndex] = cardsIndex;
     }
 
-    // Search for needed ace conversions, 1 to 11 or vice versa
-    private int AceConverter(List<CardScript> hand, int handValue) {
-        bool softHand = false;
+    // Search for needed ace conversions in given 'hand'
+    private int AceConverter(List<CardScript> hand, int handIndex, int handValue) {
         foreach (CardScript ace in hand) {
             int aceValue = ace.GetValue();
             // if converting, adjust 'card' object value and handValue
             if (aceValue == 1 && handValue + 10 < 22) {
                 ace.SetValue(11);
                 handValue += 10;
-                softHand = true;
+                handTypes[handIndex] = "H";     // update handType
             } else if (aceValue == 11 && handValue > 21) {
                 ace.SetValue(1);
                 handValue -= 10;
+                handTypes[handIndex] = "S";     // update handType
             }
         }
-
-        // Indicate Hard or Soft hand
-        handTypes[handIndex] = 'H';
-        if (softHand) {
-            handTypes[handIndex] = 'S';
-        }
-
         return handValue;
     }
 
@@ -139,7 +136,6 @@ public class PlayerScript : MonoBehaviour {
         int numOfCards = hands[0].Count;
         int handValue = handValues[0] + holeCard;
         if ((numOfHands == 1) && (numOfCards == 2) && (handValue == 21)) {
-            handTypes[0] = "BJ" // Update handType
             return true;
         }
         return false;
@@ -159,9 +155,9 @@ public class PlayerScript : MonoBehaviour {
         newCard = shoeScript.CopyCard(currCard, newCard);
         
         // Add newCard to newHand
-        PushPopCardToFromHand(newCard, handIndex, true)   // push: true
+        PushPopCardToFromHand(newCard, handIndex, true);   // push: true
         // Remove currCard from currHand
-        PushPopCardToFromHand(currCard, handIndex, false) // pop: false
+        PushPopCardToFromHand(currCard, handIndex, false); // pop: false
 
         // Deal two more cards
         GetCard(handIndex);
@@ -171,7 +167,7 @@ public class PlayerScript : MonoBehaviour {
     // Create an additional hand
     private void AddHand() {
         handValues.Add(0);
-        handTypes.Add('H');
+        handTypes.Add("H");
         hands.Add(new List<CardScript>());
         handsAces.Add(new List<CardScript>());
     }
@@ -179,7 +175,7 @@ public class PlayerScript : MonoBehaviour {
     // Reset hand and card variables to initial states
     public void ResetHand() {
         // Reset master array
-        for (int i = 0; i < hands.Count; i++;) {
+        for (int i = 0; i < hands.Count; i++) {
             int handIndex = i;
             for (int j = 0; j < hands[handIndex].Count; j++) {
                 int cardsIndex = j;
@@ -193,7 +189,7 @@ public class PlayerScript : MonoBehaviour {
         // Reset Hand Variables
         holeCard = 0;
         handValues = new List<int> {0};
-        handTypes = new List<string> {'H'};
+        handTypes = new List<string> {"H"};
         hands = new  List<List<CardScript>> {new List<CardScript>()};
         handsAces = new  List<List<CardScript>> {new List<CardScript>()};
     }

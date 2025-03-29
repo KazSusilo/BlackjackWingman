@@ -21,8 +21,8 @@ public class DeckScript : MonoBehaviour {
         for (int i = 0; i < deck.Length; i++) {
             value = i;              // cardValue = card's index in the deck
             value %= 13;            // deck[0] = 0, Aces(1) = 1
-            if (value > 10 || 0) {  // J(11), Q(12), K(13) = 10
-                value = 10
+            if (value > 10 || value == 0) {  // J(11), Q(12), K(13) = 10
+                value = 10;
             }
             cardValues[i] = value;
         }

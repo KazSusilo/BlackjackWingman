@@ -7,9 +7,9 @@ public class ShoeScript : MonoBehaviour {
 
     // Dynamically set size based on game setting
     // 1D: 53, 4D: 209, 8D: 417, etc 
-    public totalCards = 52; // Need to dynamically adjust
-    private int[] cardValues = new int[totalCards + 1]; // + 1 for back of card
-    public Sprite[] shoe;   // Pre-defined array of sprites set in Unity
+    public int totalCards = 52;             // Need to dynamically adjust
+    private int[] cardValues = new int[53]; // Need to dynamically adjust size
+    public Sprite[] shoe;                   // Pre-defined array of sprites set in Unity
     public int shoeIndex = 0;
 
 
@@ -24,7 +24,7 @@ public class ShoeScript : MonoBehaviour {
         for (int i = 0; i < shoe.Length; i++) {
             value = i;              // cardValue = card's index in the shoe
             value %= 13;            // shoe[0] = 0, Aces(1) = 1
-            if (value > 10 || 0) {  // J(11), Q(12), K(13) = 10
+            if (value > 10 || value == 0) {  // J(11), Q(12), K(13) = 10
                 value = 10;
             }
             cardValues[i] = value;
@@ -39,7 +39,7 @@ public class ShoeScript : MonoBehaviour {
             
             // Swap sprite of cards
             Sprite tempCard = shoe[i];
-            shoe[i] = deck[j];
+            shoe[i] = shoe[j];
             shoe[j] = tempCard;
 
             // Swap value of cards
@@ -66,5 +66,5 @@ public class ShoeScript : MonoBehaviour {
     }
 
     // Return the 'BackOfCard' Sprite
-    public Sprite GetBackOfCard() { return shoe[0] }
+    public Sprite GetBackOfCard() { return shoe[0]; }
 }
