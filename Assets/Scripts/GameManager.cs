@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     public PlayerScript player;
     private int handIndex = 0;
     private float totalBet = 0f;
-    private float startingBet = 0f;
+    private float startingBet = 500f;
     private List<float> bets = new List<float> {0f};
     private bool hasInsurance = false;
 
@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text [] playerHandIndicatorsText;    // pre-defined in Unity editor
     public TMP_Text [] playerHandResultsText;       // pre-defined in Unity editor
     public TMP_Text [] playerBetsText;              // pre-defined in Unity editor
+    public TMP_Text insuranceText;                  // offer insurance? 
     public TMP_Text roundText;                      // ("Win", "Lose", "Push", etc)
     public TMP_Text rewardText;                     // how much the player wins/loses
 
@@ -77,8 +78,8 @@ public class GameManager : MonoBehaviour
         standButton.onClick.AddListener(() => StandClicked());
         splitButton.onClick.AddListener(() => SplitClicked());
         doubleButton.onClick.AddListener(() => DoubleClicked());
-        yesInsuranceButton.onClick.AddListener(() => TakeInsuranceClicked(true));
-        noInsuranceButton.onClick.AddListener(() => TakeInsuranceClicked(false));
+        yesInsuranceButton.onClick.AddListener(() => InsuranceClicked(true));
+        noInsuranceButton.onClick.AddListener(() => InsuranceClicked(false));
         
         // Listener for Bet Buttons
         clearBetButton.onClick.AddListener(() => ClearBetClicked());
@@ -105,7 +106,7 @@ public class GameManager : MonoBehaviour
     // Clear starting bet
     private void ClearBetClicked() {
         startingBet = 0f;
-        playerTotalBetText.text = startingBet.ToString();
+        playerTotalBetText.text = "Total Bet: " + startingBet.ToString();
         clearBetButton.gameObject.SetActive(false);
     }
 
@@ -128,7 +129,7 @@ public class GameManager : MonoBehaviour
         // Process and update starting bet variables
         if (betAllowed) {
             startingBet = newBet;
-            playerTotalBetText.text = startingBet.ToString();
+            playerTotalBetText.text = "Total Bet: " + startingBet.ToString();
             clearBetButton.gameObject.SetActive(true);
         }
     }
@@ -150,6 +151,7 @@ public class GameManager : MonoBehaviour
         playerHandValuesText[handIndex].gameObject.SetActive(true);
         playerHandTypesText[handIndex].gameObject.SetActive(true);
         playerHandIndicatorsText[handIndex].gameObject.SetActive(true);
+        playerBetsText[handIndex].gameObject.SetActive(true);
         
         // Deal cards to dealer
         dealer.DealHand();
@@ -159,13 +161,14 @@ public class GameManager : MonoBehaviour
 
         // Update HUD
         dealerHandValueText.gameObject.SetActive(true);
-        dealerHandTypeText.gameObject.SetActive(true);
         
         // Offer insurance (side-bet)
         float insuranceCost = startingBet / 2;
-        if (I && dealer.handValues[handIndex] == 11 && player.HasSufficientFunds(insuranceCost)) {
+        if (I && dealer.handValues[0] == 11 && player.HasSufficientFunds(insuranceCost)) {
+            insuranceText.gameObject.SetActive(true);
             yesInsuranceButton.gameObject.SetActive(true);
             noInsuranceButton.gameObject.SetActive(true);
+            DisableActionButtons();
         }
 
         // Check for BJ
@@ -178,23 +181,32 @@ public class GameManager : MonoBehaviour
 
         // Adjust Button Visibility
         dealButton.gameObject.SetActive(false);
-        hitButton.gameObject.SetActive(true);
-        standButton.gameObject.SetActive(true);
         SetAvailableActions(handIndex);
     }
 
     // Clear table
     private void ClearTable() {
+        // Remove in game text
         roundText.gameObject.SetActive(false);
+        rewardText.gameObject.SetActive(false);
+
+        // Reset Player Variables
         player.ResetHand();
         handIndex = 0;
-        bets = new List<float> {500f};
-        dealer.ResetHand();
+        bets = new List<float> {0f};
+        totalBet = 0;
 
-        playerHandValuesText[0].gameObject.SetActive(false);
-        playerHandValuesText[1].gameObject.SetActive(false);
-        playerHandValuesText[2].gameObject.SetActive(false);
-        playerHandValuesText[3].gameObject.SetActive(false);
+        // Reset DealerVariables
+        dealer.ResetHand();
+        dealerHandTypeText.gameObject.SetActive(false);
+
+        // Player HUD Variables
+        for (int i = 0; i < maxSplit; i++) {
+            playerHandValuesText[i].gameObject.SetActive(false);
+            playerHandTypesText[i].gameObject.SetActive(false);
+            playerHandResultsText[i].gameObject.SetActive(false);
+            playerBetsText[i].gameObject.SetActive(false);
+        }
 
         // Shuffle shoe if cut card is reached 
         int cutCard = (int)(shoe.totalCards * penetration);
@@ -215,9 +227,9 @@ public class GameManager : MonoBehaviour
 
     // Processes and updates total bet variables
     private void ProcessBet(int handIndex, float betAmount) {
+        player.AdjustBalance(-betAmount);
         totalBet += betAmount;
-        player.AdjustBalance(-totalBet);
-        bets[handIndex] = totalBet;
+        bets[handIndex] += betAmount;
         playerBetsText[handIndex].text = bets[handIndex].ToString();
         playerTotalBetText.text = "Total Bet: " + totalBet.ToString();
         playerBalanceText.text = "Balance: " + player.GetBalance().ToString();
@@ -230,6 +242,8 @@ public class GameManager : MonoBehaviour
             StandClicked();
             return;
         }
+        hitButton.gameObject.SetActive(true);
+        standButton.gameObject.SetActive(true);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
 
@@ -257,6 +271,8 @@ public class GameManager : MonoBehaviour
         playerHandValuesText[handIndex].text = player.handValues[handIndex].ToString();
         playerHandTypesText[handIndex].text = player.handTypes[handIndex];
         if (player.handValues[handIndex] > 21) {    // checks if player busted
+            playerHandResultsText[handIndex].text = "Bust";
+            playerHandResultsText[handIndex].gameObject.SetActive(true);
             StandClicked();
             return;
         }
@@ -264,7 +280,7 @@ public class GameManager : MonoBehaviour
 
         // Check if no more space on table to keep hitting
         int cardsIndex = player.cardsIndexes[handIndex];
-        if (cardsIndex < 14) {   // A,A,A,A,A,A,A,A,2,2,2,2,2,2
+        if (cardsIndex == 14) {   // A,A,A,A,A,A,A,A,2,2,2,2,2,2
             StandClicked();
         }
     }
@@ -286,7 +302,7 @@ public class GameManager : MonoBehaviour
         
         // Edge case when hand only has one card after splitting
         if (player.hands[handIndex].Count < 2) {
-            player.GetCard(handIndex);
+            HitClicked();
         }
 
         SetAvailableActions(handIndex);
@@ -301,11 +317,27 @@ public class GameManager : MonoBehaviour
 
         // Split current hand
         player.SplitHand(handIndex);
+
+        // Update HUD
         playerHandValuesText[handIndex].text = player.handValues[handIndex].ToString();
         playerHandValuesText[newHandIndex].text = player.handValues[newHandIndex].ToString();
         playerHandValuesText[newHandIndex].gameObject.SetActive(true);
+        playerHandTypesText[newHandIndex].text = player.handTypes[newHandIndex].ToString();
+        playerHandTypesText[newHandIndex].gameObject.SetActive(true);
 
+        // Show Bet of split hand
+        playerBetsText[newHandIndex].text = bets[newHandIndex].ToString();
+        playerBetsText[newHandIndex].gameObject.SetActive(true);
+
+        HitClicked();
         SetAvailableActions(handIndex);
+        
+        // Cannot resplit aces
+        if (!RSA && player.handValues[newHandIndex] == 11) {
+            StandClicked();
+            HitClicked();
+            StandClicked();
+        }
     }
 
     // Player doubles
@@ -314,18 +346,27 @@ public class GameManager : MonoBehaviour
         ProcessBet(handIndex, startingBet);
 
         // Get one card
-        HitClicked();
         int prevHandIndex = handIndex;
+        HitClicked();
         if (prevHandIndex == handIndex) {   // avoids extra StandClicked if triggered in HitClicked
             StandClicked();
         }
     }
 
     // Player takes/refuses insurance
-    private void TakeInsuranceClicked(bool takeInsurance) {
+    private void InsuranceClicked(bool takeInsurance) {
         hasInsurance = takeInsurance;
 
         // Add side bet
+        if (hasInsurance) {
+            float bet = startingBet / 2;
+            ProcessBet(handIndex, bet);
+        }
+
+        insuranceText.gameObject.SetActive(false);
+        yesInsuranceButton.gameObject.SetActive(false);
+        noInsuranceButton.gameObject.SetActive(false);
+        SetAvailableActions(handIndex);
     }
 
     // Player's turn is over
@@ -335,60 +376,24 @@ public class GameManager : MonoBehaviour
         // Dealer plays their turn
         PlayDealer();        
         
-        // Define necessary dealer variables
-        bool dealerBJ = (dealer.handTypes[0] == "BJ");              
-        int dealerHandValue = dealer.handValues[0];
-        bool dealerBust = 21 < dealerHandValue;
-        
         // Address all player's hands
-        bool playerBJ = (player.handTypes[0] == "BJ");
-        handIndex = 0;
-        float totalReward = 0f;
-        while (handIndex < player.handValues.Count) {
-            int playerHandValue = player.handValues[handIndex];
-            bool playerBust = 21 < playerHandValue;
-            playerHandTypesText[handIndex].text = player.handTypes[handIndex];
-            float reward = 0f;
+        float totalReward = ProcessPlayerHands();
 
-            // player wins with BJ
-            if (playerBJ && !dealerBJ) {
-                roundText.text = "Blackjack";
-                playerHandResultsText[handIndex].text = "Win";
-                reward = (2.5f * bets[handIndex]);
-            }
-            // player wins
-            else if (dealerBust || ((!playerBust) && (dealerHandValue < playerHandValue))) {
-                playerHandResultsText[handIndex].text = "Win";
-                reward = (2 * bets[handIndex]);
-            }
-            // player loses
-            else if (playerBust ||  ((!dealerBust) && (playerHandValue < dealerHandValue))) {
-                playerHandResultsText[handIndex].text = "Lose";
-            }
-            // player pushes
-            else if (playerHandValue == dealerHandValue) {
-                playerHandResultsText[handIndex].text = "Push";
-                reward = (bets[handIndex]);
-            }
-
-            totalReward += reward;
-            handIndex++;
-        }
-
+        /*
         // Adress side-bet (insurance)
         if (I && dealerBJ && hasInsurance) {
             totalReward += startingBet;
         }
+        */
 
-        // Round results
-        player.AdjustBalance(totalReward);
+        // Display round results
         if (totalReward > 0) {
             roundText.text = "You Win";
             rewardText.text = totalReward.ToString();
         } 
         else if (totalReward < 0) {
             roundText.text = "You Lose";
-            rewardText.text = (-(totalBet - totalReward)).ToString();
+            rewardText.text = (-totalBet).ToString();
         }
         else if (totalReward == 0) {
             roundText.text = "You Broke Even";
@@ -410,6 +415,7 @@ public class GameManager : MonoBehaviour
         dealer.handValues[0] += dealer.GetHoleCard();                   // Add hole card to handValue
         int dealerHandValue = dealer.handValues[0];
         dealerHandValueText.text = dealerHandValue.ToString();          // Update text
+        dealerHandTypeText.gameObject.SetActive(true);
 
         // Dealer keeps hitting until stopping condition
         while (true) {
@@ -436,12 +442,58 @@ public class GameManager : MonoBehaviour
         dealerHandTypeText.text = dealer.handTypes[0];
     }
 
-    // Disable all action buttons
+    // 
+    private float ProcessPlayerHands() {
+        // Define necessary dealer variables
+        bool dealerBJ = (dealer.handTypes[0] == "BJ");              
+        int dealerHandValue = dealer.handValues[0];
+        bool dealerBust = 21 < dealerHandValue;
+
+        // Pre-processing to address each hand
+        handIndex = 0;
+        float totalReward = 0f;
+        bool playerBJ = (player.handTypes[0] == "BJ");
+        while (handIndex < player.handValues.Count) {
+            int playerHandValue = player.handValues[handIndex];
+            bool playerBust = 21 < playerHandValue;
+            float bet = bets[handIndex];
+            float reward = 0;
+
+            // player wins with BJ
+            if (playerBJ && !dealerBJ) {
+                roundText.text = "Blackjack";
+                playerHandResultsText[handIndex].text = "Win";
+                reward = (2.5f * bet);
+            }
+            // player loses
+            else if (playerBust ||  ((!dealerBust) && (playerHandValue < dealerHandValue))) {
+                playerHandResultsText[handIndex].text = "Lose";
+            }
+            // player wins
+            else if (dealerBust || ((!playerBust) && (dealerHandValue < playerHandValue))) {
+                playerHandResultsText[handIndex].text = "Win";
+                reward = (2 * bet);
+            }
+            // player pushes
+            else if (playerHandValue == dealerHandValue) {
+                playerHandResultsText[handIndex].text = "Push";
+                reward = (bet);
+            }
+
+            player.AdjustBalance(reward);   // Adjusting real balance
+            totalReward += reward - bet;    // For reward text
+            playerHandResultsText[handIndex].gameObject.SetActive(true);
+            handIndex++;
+        }
+
+        return totalReward;
+    }
+
+    // Disable action buttons
     private void DisableActionButtons() {
         hitButton.gameObject.SetActive(false);
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
-
     }
 }

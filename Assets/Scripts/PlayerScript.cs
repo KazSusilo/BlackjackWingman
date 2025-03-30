@@ -31,7 +31,7 @@ public class PlayerScript : MonoBehaviour {
     public GameObject[] cards3; // pre-defined in Unity editor
     public GameObject[] cards4; // pre-defined in Unity editor
     public List<GameObject[]> cards = new List<GameObject[]>();     // Master array
-    public List<int> cardsIndexes = new List<int> {0, 0, 0, 0};     // Master indexes
+    public List<int> cardsIndexes = new List<int> {0};              // Master indexes
     
 
     // Distinguish type of player
@@ -44,6 +44,10 @@ public class PlayerScript : MonoBehaviour {
             cards.Add(cards2);
             cards.Add(cards3);
             cards.Add(cards4);
+
+            cardsIndexes.Add(0);
+            cardsIndexes.Add(0);
+            cardsIndexes.Add(0);
         }
     }
 
@@ -103,7 +107,7 @@ public class PlayerScript : MonoBehaviour {
         }
         
         // Convert aces to maximize hand without busting
-        handValue = AceConverter(hand, handIndex, handValue);
+        handValue = AceConverter(handAces, handIndex, handValue);
 
         // Update master
         handValues[handIndex] = handValue;
@@ -120,11 +124,11 @@ public class PlayerScript : MonoBehaviour {
             if (aceValue == 1 && handValue + 10 < 22) {
                 ace.SetValue(11);
                 handValue += 10;
-                handTypes[handIndex] = "H";     // update handType
+                handTypes[handIndex] = "S";     // update handType
             } else if (aceValue == 11 && handValue > 21) {
                 ace.SetValue(1);
                 handValue -= 10;
-                handTypes[handIndex] = "S";     // update handType
+                handTypes[handIndex] = "H";     // update handType
             }
         }
         return handValue;
@@ -148,20 +152,22 @@ public class PlayerScript : MonoBehaviour {
 
         // Split cards
         int currCardsIndex = cardsIndexes[handIndex];   // Index of which card should be split-off
-        int newHandIndex = handValues.Count - 1;        // Index of which hand to place card
+        int newHandIndex = handValues.Count - 1;        // Index of which hand to place split-off card
         int newCardsIndex = cardsIndexes[newHandIndex]; // Index of where card should be newly placed in hand
         CardScript currCard = hands[handIndex][currCardsIndex - 1];                         // split-off card origin
         CardScript newCard = cards[newHandIndex][newCardsIndex].GetComponent<CardScript>(); // split-off card destination
         newCard = shoeScript.CopyCard(currCard, newCard);
         
         // Add newCard to newHand
-        PushPopCardToFromHand(newCard, handIndex, true);   // push: true
+        PushPopCardToFromHand(newCard, newHandIndex, true);     // push: true
         // Remove currCard from currHand
-        PushPopCardToFromHand(currCard, handIndex, false); // pop: false
+        PushPopCardToFromHand(currCard, handIndex, false);      // pop: false
 
         // Deal two more cards
+        /*
         GetCard(handIndex);
         GetCard(newHandIndex);
+        */
     }
 
     // Create an additional hand

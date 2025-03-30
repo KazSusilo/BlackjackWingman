@@ -19,8 +19,7 @@ public class CardScript : MonoBehaviour {
 
     // Reset sprite and value from card gameObject
     public void ResetCard() {
-        // Sprite backOfCard = GameObject.Find("Deck").GetComponent<DeckScript>().GetBackOfCard();
-        Sprite backOfCard = shoeScript.GetBackOfCard();
+        Sprite backOfCard = GameObject.Find("Shoe").GetComponent<ShoeScript>().GetBackOfCard();
         gameObject.GetComponent<SpriteRenderer>().sprite = backOfCard;
         gameObject.GetComponent<Renderer>().enabled = false;
         value = 0;
