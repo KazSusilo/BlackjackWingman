@@ -338,9 +338,6 @@ public class GameManager : MonoBehaviour
             HitClicked();
         }
 
-        int prevHandIndex = handIndex;
-        HitClicked();
-        if (prevHandIndex == handIndex) {   // avoids extra StandClicked if triggered in HitClicked
         SetAvailableActions(handIndex);
     }
 
