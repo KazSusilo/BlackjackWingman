@@ -264,6 +264,11 @@ public class GameManager : MonoBehaviour
 
     // Enable appropriate action buttons on player's turn
     private void SetAvailableActions(int handIndex) {
+        // Edge case of being called one too many
+        if (handIndex >= player.handValues.Count) {
+            return;
+        }
+
         // Edge case if hand is 21 (not BJ)
         if (handIndex < player.handValues.Count && player.handValues[handIndex] == 21) {
             StandClicked();
@@ -388,10 +393,11 @@ public class GameManager : MonoBehaviour
         
         // Cannot resplit aces
         if (!RSA && playerNewHandValue == 11) {
-            int prevHandIndex = handIndex;
-            StandClicked(); // Gets one card for second hand via HitClicked
-            if (prevHandIndex == handIndex) {
-                StandClicked(); // avoids extra StandClicked if triggered in HitClicked
+            if (handIndex < newHandIndex){
+                StandClicked(); // avoids extra StandClicked if first hand is 21
+            }
+            if (newHandIndex == handIndex) {
+                StandClicked(); // avoids extra StandClicked if second hand is 21
             }
         }
     }
