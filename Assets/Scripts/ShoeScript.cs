@@ -7,35 +7,50 @@ public class ShoeScript : MonoBehaviour {
 
     // Dynamically set size based on game setting
     // 1D: 53, 4D: 209, 8D: 417, etc 
-    public int totalCards = 52;             // Need to dynamically adjust
-    private int[] cardValues = new int[53]; // Need to dynamically adjust size
-    public Sprite[] shoe;                   // Pre-defined array of sprites set in Unity
+    public int totalCards;             // Need to dynamically adjust
+    private List<int> cardValues = new List<int>();
+    //public Sprite[] shoe;                   // Pre-defined array of sprites set in Unity
+    public List<Sprite> shoe = new List<Sprite>();
+    public Sprite[] Deck;                      // Pre-defined array of sprites set in Unity
+
     public int shoeIndex = 0;
 
 
     // Start is called before the first frame update
     private void Start() {
+        SetShoe(8);
         SetCardValues();
+    }
+
+    // Assigns the amount of decks there are in the shoe
+    public void SetShoe(int decks) {
+        shoe.Add(Deck[0]);    // Add initial card
+        for (int i = 0; i < decks; i++) {           // iD game ~ i=8: 8D game
+            for (int j = 1; j < Deck.Length; j++) {
+                shoe.Add(Deck[j]);
+            }
+        }
+        totalCards = shoe.Count - 1;
     }
 
     // Assign values to each card in the shoe
     private void SetCardValues() {
         int value = 0;
-        for (int i = 0; i < shoe.Length; i++) {
+        for (int i = 0; i < shoe.Count; i++) {
             value = i;              // cardValue = card's index in the shoe
             value %= 13;            // shoe[0] = 0, Aces(1) = 1
             if (value > 10 || value == 0) {  // J(11), Q(12), K(13) = 10
                 value = 10;
             }
-            cardValues[i] = value;
+            cardValues.Add(value);
         }
     }
 
     // Shuffle shoe
     public void Shuffle() {
         // Standard array data swapping technique
-        for (int i = shoe.Length - 1; i > 0; i--) { // i > 0 to keep shoe[0] = back of card
-            int j = Mathf.FloorToInt(Random.Range(0.0f, 1.0f) * (shoe.Length - 1)) + 1;
+        for (int i = shoe.Count - 1; i > 0; i--) { // i > 0 to keep shoe[0] = back of card
+            int j = Mathf.FloorToInt(Random.Range(0.0f, 1.0f) * (shoe.Count - 1)) + 1;
             
             // Swap sprite of cards
             Sprite tempCard = shoe[i];
