@@ -389,7 +389,6 @@ public class GameManager : MonoBehaviour
         playerBetsText[newHandIndex].gameObject.SetActive(true);
 
         HitClicked();
-        SetAvailableActions(handIndex);
         
         // Cannot resplit aces
         if (!RSA && playerNewHandValue == 11) {
