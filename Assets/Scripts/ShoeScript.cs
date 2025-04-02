@@ -7,18 +7,18 @@ public class ShoeScript : MonoBehaviour {
 
     // Dynamically set size based on game setting
     // 1D: 53, 4D: 209, 8D: 417, etc 
-    public int totalCards;             // Need to dynamically adjust
+    public int totalCards;             
     private List<int> cardValues = new List<int>();
-    //public Sprite[] shoe;                   // Pre-defined array of sprites set in Unity
     public List<Sprite> shoe = new List<Sprite>();
-    public Sprite[] Deck;                      // Pre-defined array of sprites set in Unity
-
+    public Sprite[] Deck;   // Pre-defined array of card sprites set in Unity
     public int shoeIndex = 0;
+    public int runningCount = 0;
+    public int trueCount = 0;
 
 
     // Start is called before the first frame update
     private void Start() {
-        SetShoe(8);
+        SetShoe(2);
         SetCardValues();
     }
 
@@ -62,7 +62,8 @@ public class ShoeScript : MonoBehaviour {
             cardValues[i] = cardValues[j];
             cardValues[j] = tempValue;
         }
-        shoeIndex = 1;   // shoe[0] = back of card
+        shoeIndex = 1;    // shoe[0] = back of card
+        runningCount = 0; // reset running count
     }
 
     // Deals the top card of the shoe and assigns to the given 'card'
@@ -70,6 +71,21 @@ public class ShoeScript : MonoBehaviour {
         card.SetSprite(shoe[shoeIndex]);
         card.SetValue(cardValues[shoeIndex]);
         shoeIndex++;
+
+        // Adjust running count
+        int cardValue = card.GetValue();
+        if (2 <= cardValue && cardValue <= 6) {
+            runningCount++;
+        }
+        else if (cardValue == 10 || cardValue == 1 || cardValue == 11) {
+            runningCount--;
+        }
+
+        // Compute true count
+        float cardsRemaining = (float)(totalCards - shoeIndex - 1);                 // -1 for backofCard
+        float decksRemaining = Mathf.Round((cardsRemaining / 52) / .25f) * .25f;    // Round to nearest .25
+        trueCount = (int)(Mathf.Floor(runningCount / decksRemaining));              // Floor trueCount
+
         return card;
     }
 
