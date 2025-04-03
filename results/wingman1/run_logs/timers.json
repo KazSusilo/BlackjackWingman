@@ -1,0 +1,42 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1743669784",
+        "python_version": "3.10.11 | packaged by Anaconda, Inc. | (main, May 16 2023, 00:55:32) [MSC v.1916 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\Kaz\\miniconda3\\envs\\mlagents\\Scripts\\mlagents-learn --run-id=wingman1 --force",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.2.2+cu121",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1743669846"
+    },
+    "total": 62.49591700000019,
+    "count": 1,
+    "self": 0.004002699992270209,
+    "children": {
+        "run_training.setup": {
+            "total": 0.01858640000136802,
+            "count": 1,
+            "self": 0.01858640000136802
+        },
+        "TrainerController.start_learning": {
+            "total": 62.47332790000655,
+            "count": 1,
+            "self": 8.940001134760678e-05,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 62.47322119999444,
+                    "count": 1,
+                    "self": 62.47322119999444
+                },
+                "TrainerController._save_models": {
+                    "total": 1.7300000763498247e-05,
+                    "count": 1,
+                    "self": 1.7300000763498247e-05
+                }
+            }
+        }
+    }
+}

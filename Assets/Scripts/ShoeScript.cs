@@ -82,8 +82,8 @@ public class ShoeScript : MonoBehaviour {
         }
 
         // Compute true count
-        float cardsRemaining = (float)(totalCards - shoeIndex - 1);                 // -1 for backofCard
-        float decksRemaining = Mathf.Round((cardsRemaining / 52) / .25f) * .25f;    // Round to nearest .25
+        float cardsRemaining = totalCards - shoeIndex - 1.0f;                       // -1 for backofCard
+        float decksRemaining = Mathf.Round((cardsRemaining / 52.0f) / .25f) * .25f; // Round to nearest .25
         trueCount = (int)(Mathf.Floor(runningCount / decksRemaining));              // Floor trueCount
 
         return card;

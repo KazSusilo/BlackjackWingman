@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
     public PlayerScript player;
     private int handIndex = 0;
     private float totalBet = 0f;
-    private float startingBet = 500f;
+    private float startingBet = 2f;
     private List<float> playerBets = new List<float> {0f};
     private List<float> playerSideBets = new List<float> {0f};  // insurance, etc.
     public float playerTotalReward;
@@ -94,6 +94,8 @@ public class GameManager : MonoBehaviour
         bet500Button.onClick.AddListener(() => BetXClicked(500));
     }
 
+    public int GetHandIndex() { return handIndex; }
+
     // Initialize table rules
     public void InitializeGame() {
         penetration = 6/8f;
@@ -141,7 +143,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Deal initial cards to both player and dealer
-    private void DealClicked() {
+    public void DealClicked() {
         ClearTable();
         
         // Close and process betting
@@ -208,6 +210,9 @@ public class GameManager : MonoBehaviour
         // Remove in game text
         roundText.gameObject.SetActive(false);
         rewardText.gameObject.SetActive(false);
+
+        // Remove buttons (agent)
+        DisableActionButtons();
 
         // Reset Player Variables
         player.ResetHand();
@@ -297,7 +302,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player hits
-    private void HitClicked() {
+    public void HitClicked() {
         // Hit current hand
         player.GetCard(handIndex);
         int playerHandValue = player.handValues[handIndex];
@@ -340,7 +345,7 @@ public class GameManager : MonoBehaviour
     */
 
     // Player stands
-    private void StandClicked() {
+    public void StandClicked() {
         // Stand current hand
         playerHandIndicatorsText[handIndex].gameObject.SetActive(false);
         handIndex++;
@@ -363,7 +368,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player Spltis
-    private void SplitClicked() {
+    public void SplitClicked() {
         // Add bet for additional hand
         playerBets.Add(0f);
         int newHandIndex = player.handValues.Count;
@@ -402,7 +407,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player doubles
-    private void DoubleClicked() {
+    public void DoubleClicked() {
         // Double bet of current hand
         ProcessBet(handIndex, startingBet);
 
@@ -415,7 +420,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player takes/refuses insurance
-    private void InsuranceClicked(bool insured) {
+    public void InsuranceClicked(bool insured) {
         // Add side bet
         if (insured) {
             float insuranceBet = startingBet / 2;
@@ -591,5 +596,7 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
+        yesInsuranceButton.gameObject.SetActive(false);
+        noInsuranceButton.gameObject.SetActive(false);
     }
 }
