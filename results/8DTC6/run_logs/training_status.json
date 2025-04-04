@@ -1,0 +1,29 @@
+{
+    "Wingman": {
+        "checkpoints": [
+            {
+                "steps": 12471,
+                "file_path": "results\\8DTC6\\Wingman\\Wingman-12471.onnx",
+                "reward": -0.45738330563154733,
+                "creation_time": 1743715987.1087997,
+                "auxillary_file_paths": [
+                    "results\\8DTC6\\Wingman\\Wingman-12471.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 12471,
+            "file_path": "results\\8DTC6\\Wingman.onnx",
+            "reward": -0.45738330563154733,
+            "creation_time": 1743715987.1087997,
+            "auxillary_file_paths": [
+                "results\\8DTC6\\Wingman\\Wingman-12471.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.2.2+cu121"
+    }
+}
