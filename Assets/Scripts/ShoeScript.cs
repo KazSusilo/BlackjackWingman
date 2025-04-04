@@ -18,7 +18,7 @@ public class ShoeScript : MonoBehaviour {
 
     // Start is called before the first frame update
     private void Start() {
-        SetShoe(2);
+        SetShoe(8);
         SetCardValues();
     }
 

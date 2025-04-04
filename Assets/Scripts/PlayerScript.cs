@@ -11,7 +11,7 @@ public class PlayerScript : MonoBehaviour {
 
     // Player variables
     private bool isPlayer = true;
-    private float balance = 9999999999f;
+    private float balance = 100.0f;
     
     // Hand variables
     private int holeCard = 0;               // Specifically for dealer
