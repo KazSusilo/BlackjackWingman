@@ -134,17 +134,6 @@ public class PlayerScript : MonoBehaviour {
         return handValue;
     }
 
-    // Check if player/dealer has blackjack
-    public bool HasBlackjack() {
-        int numOfHands = handValues.Count;
-        int numOfCards = hands[0].Count;
-        int handValue = handValues[0] + holeCard;
-        if ((numOfHands == 1) && (numOfCards == 2) && (handValue == 21)) {
-            return true;
-        }
-        return false;
-    }
-
     // Split current hand
     public void SplitHand(int handIndex) {
         // Create an additional hand

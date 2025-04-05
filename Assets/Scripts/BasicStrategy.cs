@@ -320,20 +320,22 @@ public class BasicStrategy : MonoBehaviour {
     // Convert Table Action(string) to Table Action(int)
     private int ConvertAction(string action) {
         int result = -1;
-        if (action == "S") {        // stand
-            result = 0;
-        }
-        else if (action == "H") {   // hit
-            result = 1;
-        }
-        else if (action == "D") {   // double
-            result = 2;
-        }
-        else if (action == "P") {   // split
-            result = 3;
-        }
-        else if (action == "R") {   // surrender
-            result = 6;
+        switch (action) {
+            case "S":   // stand
+                result = 0;
+                break;
+            case "H":   // hit
+                result = 1;
+                break;
+            case "D":   // double
+                result = 2;
+                break;
+            case "P":   // split
+                result = 3;
+                break;
+            case "R":   // surrender
+                result = 6;
+                break;
         }
         return result;
     }

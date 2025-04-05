@@ -2733,7 +2733,6 @@ GameObject:
   - component: {fileID: 331502270}
   - component: {fileID: 331502268}
   - component: {fileID: 331502269}
-  - component: {fileID: 331502271}
   m_Layer: 0
   m_Name: WingmanAgent
   m_TagString: Untagged
@@ -2763,8 +2762,11 @@ MonoBehaviour:
   shoe: {fileID: 784388279}
   basicStrategy: {fileID: 1910110561}
   currentEpisodeText: {fileID: 1620160312}
-  currentStepText: {fileID: 1640891534}
   cumulativeRewardText: {fileID: 1687394563}
+  currentStepText: {fileID: 1640891534}
+  totalWinsText: {fileID: 810519538}
+  totalPushesText: {fileID: 941915969}
+  totalLossesText: {fileID: 412068340}
   _trueCount: 0
 --- !u!114 &331502269
 MonoBehaviour:
@@ -2779,7 +2781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 11
+    VectorObservationSize: 36
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -2812,21 +2814,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &331502271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 331502267}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DecisionPeriod: 1
-  DecisionStep: 0
-  TakeActionsBetweenDecisions: 0
 --- !u!1 &336774025
 GameObject:
   m_ObjectHideFlags: 0
@@ -5645,7 +5632,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 2000
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
   m_sharedMaterial: {fileID: -5111766992056407564, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
@@ -7534,6 +7521,7 @@ MonoBehaviour:
   dealer: {fileID: 190586816}
   blinder: {fileID: 2038839409}
   player: {fileID: 1142418440}
+  handIndex: 0
   playerTotalReward: 0
   playerBalanceText: {fileID: 433052820}
   playerTotalSideBetText: {fileID: 611923136}
@@ -11131,7 +11119,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 2000
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
   m_sharedMaterial: {fileID: -5111766992056407564, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
@@ -12913,7 +12901,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 2000
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
   m_sharedMaterial: {fileID: -5111766992056407564, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
@@ -15419,7 +15407,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 2000
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
   m_sharedMaterial: {fileID: -5111766992056407564, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
@@ -15891,7 +15879,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 2000
+  m_text: 0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}
   m_sharedMaterial: {fileID: -5111766992056407564, guid: d2a60fbbe34d6b848ad7cc747fa789b3, type: 2}

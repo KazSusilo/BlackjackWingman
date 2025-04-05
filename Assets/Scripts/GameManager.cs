@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,7 +28,7 @@ public class GameManager : MonoBehaviour
 
     // Player 
     public PlayerScript player;
-    private int handIndex = 0;
+    public int handIndex = 0;
     private float totalBet = 0f;
     private float startingBet = 2f;
     private List<float> playerBets = new List<float> {0f};
@@ -68,6 +69,10 @@ public class GameManager : MonoBehaviour
     public Button bet100Button;
     public Button bet500Button;
 
+    // MLAgent Event
+    public event Action OnAwaitingAction;
+    public event Action OnRoundOver;
+
 
     // Start is called before the first frame update
     private void Start() {
@@ -93,8 +98,6 @@ public class GameManager : MonoBehaviour
         bet100Button.onClick.AddListener(() => BetXClicked(100));
         bet500Button.onClick.AddListener(() => BetXClicked(500));
     }
-
-    public int GetHandIndex() { return handIndex; }
 
     // Initialize table rules
     public void InitializeGame() {
@@ -191,6 +194,9 @@ public class GameManager : MonoBehaviour
         insuranceText.gameObject.SetActive(availability);
         yesInsuranceButton.gameObject.SetActive(availability);
         noInsuranceButton.gameObject.SetActive(availability);
+
+        // Triger ML AGENT Decision
+        OnAwaitingAction?.Invoke();
     }
 
     // Conclude round if player or dealer has Blackjack
@@ -227,6 +233,10 @@ public class GameManager : MonoBehaviour
 
         // Player HUD Variables
         for (int i = 0; i < maxSplit; i++) {
+            playerHandValuesText[i].text = "";
+            playerHandResultsText[i].text = "";
+            playerBetsText[i].text = "";
+
             playerHandValuesText[i].gameObject.SetActive(false);
             playerHandResultsText[i].gameObject.SetActive(false);
             playerBetsText[i].gameObject.SetActive(false);
@@ -274,7 +284,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Edge case if hand is 21 (not BJ)
+        // Edge case if hand is 21
         if (handIndex < player.handValues.Count && player.handValues[handIndex] == 21) {
             StandClicked();
             return;
@@ -299,6 +309,9 @@ public class GameManager : MonoBehaviour
                 splitButton.gameObject.SetActive(true);
             }
         }
+
+        // Triger ML AGENT Decision
+        OnAwaitingAction?.Invoke();
     }
 
     // Player hits
@@ -507,6 +520,9 @@ public class GameManager : MonoBehaviour
         // Set UI for next move / hand / turn
         dealButton.gameObject.SetActive(true);
         SetBettingAvailability(true);
+
+        // Triger ML AGENT Round End
+        OnRoundOver?.Invoke();
     }
 
     // Dealer player's their turn and return their hand value
@@ -515,34 +531,25 @@ public class GameManager : MonoBehaviour
         blinder.GetComponent<Renderer>().enabled = false;               // Show hole card
         dealer.handValues[0] += dealer.GetHoleCard();                   // Add hole card to handValue
 
-        int dealerHandValue = dealer.handValues[0];
-        string dealerHandType = dealer.handTypes[0];
-        dealerHandValueText.text = dealerHandType + dealerHandValue.ToString();          // Update text
-
         // Dealer keeps hitting until stopping condition
         while (true) {
+            // Get dealer hand value and handType
+            int dealerHandValue = dealer.handValues[0];
+            string dealerHandType = dealer.handTypes[0];
+            dealerHandValueText.text = dealerHandType + dealerHandValue.ToString();  
+
             // Define stopping condition
-            dealerHandValue = dealer.handValues[0];
-            dealerHandType = dealer.handTypes[0];
             bool canHit = (dealerHandValue < 17 || dealerHandValue == 17 && dealerHandType == "S");
             if (!H17) {     // Game is S17
                 canHit = (dealerHandValue < 17);
             }
             
-            // Hit until unable
+            // Check if dealer should stop hitting
             if (!canHit) {
                 break;
             }
-            HitDealer();
+            dealer.GetCard(0);  // hit dealer
         }
-    }
-
-    // Dealer hits
-    private void HitDealer() {
-        dealer.GetCard(0);
-        int dealerHandValue = dealer.handValues[0];
-        string dealerHandType = dealer.handTypes[0];
-        dealerHandValueText.text = dealerHandType + dealerHandValue.ToString();
     }
 
     // Reward player appropriately for each of their hands
