@@ -28,7 +28,7 @@ public class WingmanAgent : Agent {
     private bool _insuranceOffered;
 
     // Variables regarding performance
-    private int _totalWins;
+    private int _totalWins;     // units of $2
     private int _totalPushes;
     private int _totalLosses;
     public TMP_Text totalWinsText;
@@ -41,10 +41,10 @@ public class WingmanAgent : Agent {
 
     // Called when the Agent is first created 
     public override void Initialize() {
-        //Debug.Log("Initialize Agent");
+        Debug.Log("Initialize Agent");
 
         // Turn off automatic stepping
-        Academy.Instance.AutomaticSteppingEnabled = false;
+        //Academy.Instance.AutomaticSteppingEnabled = false;
 
         // Initialize episode variables
         _currentEpisode = 0;
@@ -69,8 +69,19 @@ public class WingmanAgent : Agent {
 
     // Reset the environment at the start of each episode
     public override void OnEpisodeBegin() {
-        //Debug.Log("Begin New Episode");
+        Debug.Log("Begin New Episode");
 
+        // Reset episode variables
+        _currentEpisode++;
+        _cumulativeReward = 0f;
+        currentEpisodeText.text = "Episode: " + _currentEpisode.ToString();
+        cumulativeRewardText.text = "Reward: " + _cumulativeReward.ToString();
+        currentStepText.text = "Step: " + StepCount.ToString();
+        
+        // Reset training variables
+        _terminalPhase = false;
+        _insuranceOffered = false;
+        
         // Generate a Blackjack round
         GenerateRound();
         void GenerateRound() {
@@ -94,86 +105,77 @@ public class WingmanAgent : Agent {
                 gameManager.DealClicked();
 
                 // Edge case - don't generate 'frame1' terminating round states
-                if (!CheckRealTerminalState()) {
+                if (!CheckFrame1TerminalState()) {
                     break;
                 }
             }
         }
-
-        // Reset episode variables
-        _currentEpisode++;
-        _cumulativeReward = 0f;
-        currentEpisodeText.text = "Episode: " + _currentEpisode.ToString();
-        cumulativeRewardText.text = "Reward: " + _cumulativeReward.ToString();
-        currentStepText.text = "Step: " + StepCount.ToString();
-        
-        // Reset training variables
-        _terminalPhase = false;
-        _insuranceOffered = false;
     }
 
     // Gather information about the current state of the environment
     public override void CollectObservations(VectorSensor sensor) {
-        //Debug.Log("Collecting Observations");
+        Debug.Log("Collecting Observations");
 
         // Flag if in deicision mode (0) or terminal mode (1)
-        int terminalPhase_encoded = (_terminalPhase == true) ? 1 : 0;
+        float terminalPhase_encoded = (_terminalPhase == true) ? 1.0f : 0.0f;
         sensor.AddObservation(_terminalPhase);
         
         // Collect observations regarding the player's hand(s) [24]
         CollectHandObservations(sensor);
         void CollectHandObservations(VectorSensor sensor) {
             // Hand Observations (encoded / normalized)
-            float[] handExistence = new float[] {0, 0, 0, 0};   // h1, h2, h3, h4
-            float[] handActivity = new float[] {0, 0, 0, 0};    // h1, h2, h3, h4
-            float[] hand1Details = new float[] {-1, -1, 0, -2}; // type, value, bet, result
-            float[] hand2Details = new float[] {-1, -1, 0, -2}; // type, value, bet, result
-            float[] hand3Details = new float[] {-1, -1, 0, -2}; // type, value, bet, result
-            float[] hand4Details = new float[] {-1, -1, 0, -2}; // type, value, bet, result
+            float[] handExistence = new float[] {0.0f, 0.0f, 0.0f, 0.0f};   // h1, h2, h3, h4
+            float[] handActivity = new float[] {0.0f, 0.0f, 0.0f, 0.0f};    // h1, h2, h3, h4
+            float[] hand1Details = new float[] {-1.0f, -1.0f, 0.0f, -2.0f}; // type, value, bet, result
+            float[] hand2Details = new float[] {-1.0f, -1.0f, 0.0f, -2.0f}; // type, value, bet, result
+            float[] hand3Details = new float[] {-1.0f, -1.0f, 0.0f, -2.0f}; // type, value, bet, result
+            float[] hand4Details = new float[] {-1.0f, -1.0f, 0.0f, -2.0f}; // type, value, bet, result
             for (int i = 0; i < 4; i++) {
                 // Hand Flags (0 or 1)
-                handExistence[i] = (i + 1 <= player.handValues.Count) ? 1 : 0;
-                handActivity[i] = (i == gameManager.handIndex) ? 1 : 0;
+                handExistence[i] = (i + 1 <= player.handValues.Count) ? 1.0f : 0.0f;
+                handActivity[i] = (i == gameManager.handIndex) ? 1.0f : 0.0f;
 
                 // Hand[i] Details
-                float handType_encoded = -1;
-                float handValues_normalized = -1;
-                float handBets_normalized = 0;
-                float handResult_encoded = -2;
-                if (handExistence[i] == 1) {
+                float handType_encoded = -1.0f;
+                float handValue_normalized = -1.0f;
+                float handBet_normalized = 0.0f;
+                float handResult_encoded = -2.0f;
+                if (handExistence[i] == 1.0f) {
                     // Hand Type (0 to 1) | -1 Invald
                     string handType = player.handTypes[i];
                     if (handType == "H") {
-                        handType_encoded = 0;
+                        handType_encoded = 0.0f;
                     }
                     else if (handType == "S") {
-                        handType_encoded = 1;
+                        handType_encoded = 1.0f;
                     } 
                     else if (handType == "BJ") {
-                        handType_encoded = 2;
+                        handType_encoded = 2.0f;
                     }
                     
                     // Hand Value (0 to 1) | -1 Invalid
                     int handValue = player.handValues[i];
-                    handValues_normalized = (handValue - 2.0f) / 19.0f; // 2 to 21
+                    handValue_normalized = ((float)handValue - 2.0f) / 19.0f; // 2 to 21
 
                     // Hand Bets (0 to 1) | -1 Invalid 
                     if (gameManager.playerBetsText[i].gameObject.activeSelf) {
                         float bet = -4;
                         float.TryParse(gameManager.playerBetsText[i].text, out bet);
-                        handBets_normalized = (bet - 2.0f) / 2.0f;      // $2 to $4
+                        handBet_normalized = (bet - 2.0f) / 2.0f;      // $2 to $4
                     }
 
                     // Hand Results (-1 to 1) | -2 Invalid
-                    string result = gameManager.playerHandResultsText[i].text.ToString();
-                    if (result == "Win") {
-                        handResult_encoded = 1;
-                    }
-                    else if (result == "Push") {
-                        handResult_encoded = 0;
-                    }
-                    else if (result == "Lose") {
-                        handResult_encoded = -1;
+                    if (gameManager.playerHandResultsText[i].gameObject.activeSelf) {
+                        string result = gameManager.playerHandResultsText[i].text.ToString();
+                        if (result == "Win") {
+                            handResult_encoded = 1.0f;
+                        }
+                        else if (result == "Push") {
+                            handResult_encoded = 0.0f;
+                        }
+                        else if (result == "Lose") {
+                            handResult_encoded = -1.0f;
+                        }
                     }
                 }
 
@@ -181,26 +183,26 @@ public class WingmanAgent : Agent {
                 switch (i) {
                     case 0:
                         hand1Details[0] = handType_encoded;
-                        hand1Details[1] = handValues_normalized;
-                        hand1Details[2] = handBets_normalized;
+                        hand1Details[1] = handValue_normalized;
+                        hand1Details[2] = handBet_normalized;
                         hand1Details[3] = handResult_encoded;
                         break;
                     case 1:
                         hand2Details[0] = handType_encoded;
-                        hand2Details[1] = handValues_normalized;
-                        hand2Details[2] = handBets_normalized;
+                        hand2Details[1] = handValue_normalized;
+                        hand2Details[2] = handBet_normalized;
                         hand2Details[3] = handResult_encoded;
                         break;
                     case 2:
                         hand3Details[0] = handType_encoded;
-                        hand3Details[1] = handValues_normalized;
-                        hand3Details[2] = handBets_normalized;
+                        hand3Details[1] = handValue_normalized;
+                        hand3Details[2] = handBet_normalized;
                         hand3Details[3] = handResult_encoded;
                         break;
                     case 3:
                         hand4Details[0] = handType_encoded;
-                        hand4Details[1] = handValues_normalized;
-                        hand4Details[2] = handBets_normalized;
+                        hand4Details[1] = handValue_normalized;
+                        hand4Details[2] = handBet_normalized;
                         hand4Details[3] = handResult_encoded;
                         break;
                 }
@@ -219,19 +221,19 @@ public class WingmanAgent : Agent {
         CollectDealerObservations(sensor);
         void CollectDealerObservations(VectorSensor sensor) {
             // Dealer observations (encoded)
-            float upCard_normalized = -1;
-            float handValue_normalized = -1;
+            float upCard_normalized = -1.0f;
+            float handValue_normalized = -1.0f;
             
             // Dealer up card (0 to 1) | -1 Invalid
             if (!_terminalPhase) {
-                float upCard = dealer.GetHoleCard();
-                upCard_normalized = (upCard - 2.0f) / 9.0f;         // 2 to 11
+                int upCard = dealer.GetHoleCard();
+                upCard_normalized = ((float)upCard - 2.0f) / 9.0f;         // 2 to 11
             }
             
             // Dealer hand value (0 to 1) | -1 Invalid
             if (_terminalPhase) {
-                float handValue = dealer.handValues[0];
-                handValue_normalized = (handValue - 17.0f) / 9.0f;  // 17 to 26
+                int handValue = dealer.handValues[0];
+                handValue_normalized = ((float)handValue - 17.0f) / 9.0f;  // 17 to 26
             }
 
             // Add 2 observations
@@ -247,12 +249,12 @@ public class WingmanAgent : Agent {
             int totalDecks = shoe.totalCards / 52;
             int maxRunningCount = 20 * totalDecks;
             int runningCount = shoe.runningCount;
-            float runningCount_normalized = runningCount / maxRunningCount;
+            float runningCount_normalized = (float)runningCount / (float)maxRunningCount;
 
             // True count (-1 to 1)
             int maxTrueCount = 52;
             int trueCount = shoe.trueCount;
-            float trueCount_normalized = trueCount / maxTrueCount;
+            float trueCount_normalized = (float)trueCount / (float)maxTrueCount;
 
             // Add 2 observations
             sensor.AddObservation(runningCount_normalized);
@@ -263,12 +265,12 @@ public class WingmanAgent : Agent {
         CollectActionAvailabilityObservations(sensor);
         void CollectActionAvailabilityObservations(VectorSensor sensor) {
             // Action Availability (encoded) (0 or 1)
-            float[] actionAvailability = new float[] {0, 0, 0, 0, 0, 0}; // S, H, D, P, Y, N
+            float[] actionAvailability = new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; // S, H, D, P, Y, N
             List<bool> availabilities = GetActionAvailability();
             for (int i = 0; i < availabilities.Count; i++) {
-                float availability_encoded = 0;
+                float availability_encoded = 0.0f;
                 if (availabilities[i] == true) {
-                    availability_encoded = 1;
+                    availability_encoded = 1.0f;
                 }
                 actionAvailability[i] = availability_encoded;
             }
@@ -281,15 +283,15 @@ public class WingmanAgent : Agent {
         CollectSideBetObservations(sensor);
         void CollectSideBetObservations(VectorSensor sensor) {
             // Side bet observations (encoded / normalized)
-            float insuranceTaken_encoded = -1;
+            float insuranceTaken_encoded = -1.0f;
             for (int i = 0; i < gameManager.playerSideValuesText.Length; i++) {
                 // Insurance Taken (0 or 1) | -1 Invalid
                 if (_insuranceOffered) {
                     if (gameManager.playerSideValuesText[0].gameObject.activeSelf) {
-                        insuranceTaken_encoded = 1;
+                        insuranceTaken_encoded = 1.0f;
                     }
                     else {
-                        insuranceTaken_encoded = 0;
+                        insuranceTaken_encoded = 0.0f;
                     }
                 }
             }
@@ -324,14 +326,44 @@ public class WingmanAgent : Agent {
 
     // Utilize output from NN
     public override void OnActionReceived(ActionBuffers actions) {
-        //Debug.Log("ActionReceived");
-
-        // The agent attempts to perform given action (stand, hit, etc)
+        Debug.Log("ActionReceived");
         int action = actions.DiscreteActions[0];
-        bool performed = PerformAction(action);
-
+        
         // Reward shaping with basic strategy
         RewardShape(action);  // eventually remove
+        
+        // The agent attempts to perform given action (stand, hit, etc)
+        bool performed = PerformAction(action);
+        bool PerformAction(int action) {
+            bool performedAction = false;
+            List<bool> actionAvailability = GetActionAvailability();
+
+            if (actionAvailability[action]) {
+                performedAction = true;
+                switch (action) {
+                    case 0: // Stand
+                        gameManager.StandClicked();
+                        break;
+                    case 1: // Hit               
+                        gameManager.HitClicked();
+                        break;
+                    case 2: // Double
+                        gameManager.DoubleClicked();
+                        break;
+                    case 3: // Split
+                        gameManager.SplitClicked();
+                        break;
+                    case 4: // Take Insurance
+                        gameManager.InsuranceClicked(true); 
+                        break;
+                    case 5: // Refuse Insurance
+                        gameManager.InsuranceClicked(false);
+                        break;
+                }
+            }
+
+            return performedAction;
+        }
 
         // Penalty given for attempting an illegal action
         if (!performed) {
@@ -339,77 +371,49 @@ public class WingmanAgent : Agent {
         }
     }
 
-    // Attempt to perform action (hit, stand, etc) and return if successful
-    public bool PerformAction(int action) {
-        bool performedAction = false;
-        List<bool> actionAvailability = GetActionAvailability();
-
-        if (actionAvailability[action]) {
-            performedAction = true;
-            switch (action) {
-                case 0: // Stand
-                    gameManager.StandClicked();
-                    break;
-                case 1: // Hit               
-                    gameManager.HitClicked();
-                    break;
-                case 2: // Double
-                    gameManager.DoubleClicked();
-                    break;
-                case 3: // Split
-                    gameManager.SplitClicked();
-                    break;
-                case 4: // Take Insurance
-                    gameManager.InsuranceClicked(true); 
-                    break;
-                case 5: // Refuse Insurance
-                    gameManager.InsuranceClicked(false);
-                    break;
-            }
-        }
-
-        return performedAction;
-    }
-
     // Called when GameManager awaits for the player/agent to make an action
     public void OnAwaitingAction() {
-        //Debug.Log("Requesting decision");
-
+        Debug.Log("Requesting decision");
         //RequestDecision();
         currentStepText.text = "Step: " + StepCount.ToString();
     }
 
     // Called when GameManager reaches RoundOver()
     public void OnRoundOver() {
-        //Debug.Log("Ending episode");
+        Debug.Log("Ending episode");
 
         // Edge case - don't process 'frame1' terminating round states
-        if (!CheckRealTerminalState()) {
+        if (CheckFrame1TerminalState()) {
             return;
         }
 
         // Calculate reward based on the outcome of the round
-        float roundReward = 0;
+        float roundReward = 0.0f;
         float.TryParse(gameManager.rewardText.text, out roundReward);
         float roundReward_normalzied = roundReward / 8.0f;
         RewardAgent(roundReward_normalzied);
 
         // Update Performance Variables (insight purposes)
-        if (roundReward < 0) {
-            _totalWins++;
-            totalWinsText.text = "W: " + _totalWins;     
-        }
-        else if (roundReward == 0) {
-            _totalPushes++;
+        UpdatePerformanceVariables(roundReward / 2.0f);
+        void UpdatePerformanceVariables(float rewardUnits) {
+            _totalWins += (0.0f < rewardUnits) ? (int)rewardUnits : 0;
+            _totalPushes += (rewardUnits == 0.0f) ? 1 : 0;
+            _totalLosses += (rewardUnits < 0.0f) ? (int)-rewardUnits : 0;
+
+            totalWinsText.text = "W: " + _totalWins;
             totalPushesText.text = "P : " + _totalPushes;  
-        }
-        else if (0 < roundReward) {
-            _totalLosses++;
             totalLossesText.text = "L : " + _totalLosses;
         }
 
         // Flag terminal phase
-        _terminalPhase = true;
+        if (!_terminalPhase) {
+            _terminalPhase = true;
+            StartCoroutine(DelayedEndEpisode());
+        }
+    }
+
+    private IEnumerator DelayedEndEpisode() {
+        yield return null;
         EndEpisode();
     }
 
@@ -436,13 +440,14 @@ public class WingmanAgent : Agent {
             // Hard hands
             strategies = basicStrategy.CheckMDHardTable(playerHandValue, dealerUpCard);
         }
-        else if (playerHandType == "S") {
+        else if (playerHandType == "S" && playerHandValue != 12) {
             // Soft hands
             strategies = basicStrategy.CheckMDSoftTable(playerHandValue, dealerUpCard);
         }
         else if (gameManager.splitButton.gameObject.activeSelf) {
             // Pairs
-            strategies = basicStrategy.CheckMDPairsTable(playerHandValue, dealerUpCard);
+            int cardValue = player.hands[handIndex][1].GetValue();
+            strategies = basicStrategy.CheckMDPairsTable(cardValue, dealerUpCard);
 
         } else if (gameManager.noInsuranceButton.gameObject.activeSelf) {
             // Insurance
@@ -458,8 +463,8 @@ public class WingmanAgent : Agent {
     }
 
     // Check if terminal state was reached by a 'frame1' terminating round state
-    private bool CheckRealTerminalState() {
-        bool realTerminal = true;
+    private bool CheckFrame1TerminalState() {
+        bool frame1 = false;
 
         bool playerBJ = player.handTypes[0] == "BJ";
         bool dealerBJ = dealer.handTypes[0] == "BJ";
@@ -468,22 +473,22 @@ public class WingmanAgent : Agent {
         if (playerBJ && !dealerBJ) {
             _totalWins++;
             totalWinsText.text = "W: " + _totalWins;
-            realTerminal = false;
+            frame1 = true;
         }
         // Skip BJ pushes
-        if (playerBJ && dealerBJ && !_insuranceOffered) {
+        else if (playerBJ && dealerBJ && !_insuranceOffered) {
             _totalPushes++;
             totalPushesText.text = "P : " + _totalPushes;
-            realTerminal = false;
+            frame1 = true;
         }
         // Skip BJ losses
-        if (!playerBJ && dealerBJ && !_insuranceOffered) {
+        else if (!playerBJ && dealerBJ && !_insuranceOffered) {
             _totalLosses++;
             totalLossesText.text = "L : " + _totalLosses;
-            realTerminal = false;
+            frame1 = true;
         }
         
-        return realTerminal;
+        return frame1;
     }
 
     // Returns a list of bools indicating which actions are available
@@ -497,7 +502,9 @@ public class WingmanAgent : Agent {
         bool canRefuseInsurance = gameManager.noInsuranceButton.gameObject.activeSelf;
 
         // Flag insurance offered
-        _insuranceOffered = canTakeInsurance;
+        if (!_insuranceOffered && canTakeInsurance) {
+            _insuranceOffered = true;
+        }
 
         // Add actions to list and return 
         List<bool> actionAvailability = new List<bool>();
