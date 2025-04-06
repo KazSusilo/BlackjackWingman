@@ -63,7 +63,6 @@ public class WingmanAgent : Agent {
         _totalPushes = 0;
 
         // Listeners for request decision and round end
-        gameManager.OnAwaitingAction += OnAwaitingAction;
         gameManager.OnRoundOver += OnRoundOver;
     }
 
@@ -86,22 +85,8 @@ public class WingmanAgent : Agent {
         GenerateRound();
         void GenerateRound() {
             while (true) {
-                // Reset any game state to betting/deal state
-                ResetRound();
-                void ResetRound() {
-                    // Handle insurance offer
-                    if (gameManager.noInsuranceButton.gameObject.activeSelf) {
-                        gameManager.InsuranceClicked(false);
-                    }
-
-                    // Handle as many hands as necessary
-                    while (!gameManager.dealButton.gameObject.activeSelf) {
-                        gameManager.StandClicked();
-                    }
-
-                    // Reset player balance to 100
-                    player.AdjustBalance(100.0f - player.GetBalance());
-                }
+                // Reset player balance to 100 and deal new round
+                player.AdjustBalance(100.0f - player.GetBalance());
                 gameManager.DealClicked();
 
                 // Edge case - don't generate 'frame1' terminating round states
@@ -337,7 +322,6 @@ public class WingmanAgent : Agent {
         bool PerformAction(int action) {
             bool performedAction = false;
             List<bool> actionAvailability = GetActionAvailability();
-
             if (actionAvailability[action]) {
                 performedAction = true;
                 switch (action) {
@@ -367,15 +351,8 @@ public class WingmanAgent : Agent {
 
         // Penalty given for attempting an illegal action
         if (!performed) {
-            RewardAgent(-2.0f / MaxStep);   // (-2.0 / 37) ~ -0.05
+            RewardAgent((-2.0f * 2.0f) / MaxStep);   // Simplify (2 / 37) ~ -0.054
         }
-    }
-
-    // Called when GameManager awaits for the player/agent to make an action
-    public void OnAwaitingAction() {
-        Debug.Log("Requesting decision");
-        //RequestDecision();
-        currentStepText.text = "Step: " + StepCount.ToString();
     }
 
     // Called when GameManager reaches RoundOver()
@@ -428,6 +405,7 @@ public class WingmanAgent : Agent {
     private void RewardShape(int action) {
         // The player's current hand
         int handIndex = gameManager.handIndex;
+        print("HandIndex: " + handIndex);
         int playerHandValue = player.handValues[handIndex];
         string playerHandType = player.handTypes[handIndex];
 
@@ -436,23 +414,24 @@ public class WingmanAgent : Agent {
 
         // Basic strategy action(s)
         List<int> strategies = new List<int>();
-        if (playerHandType == "H") {    
-            // Hard hands
-            strategies = basicStrategy.CheckMDHardTable(playerHandValue, dealerUpCard);
-        }
-        else if (playerHandType == "S" && playerHandValue != 12) {
-            // Soft hands
-            strategies = basicStrategy.CheckMDSoftTable(playerHandValue, dealerUpCard);
+        if (gameManager.noInsuranceButton.gameObject.activeSelf) {
+            // Insurance
+            strategies.Add(5);  // BS never takes insurance
         }
         else if (gameManager.splitButton.gameObject.activeSelf) {
             // Pairs
             int cardValue = player.hands[handIndex][1].GetValue();
             strategies = basicStrategy.CheckMDPairsTable(cardValue, dealerUpCard);
-
-        } else if (gameManager.noInsuranceButton.gameObject.activeSelf) {
-            // Insurance
-            strategies.Add(5);  // BS never takes insurance
+        } 
+        else if (playerHandType == "S" && playerHandValue != 12) {
+            // Soft hands
+            strategies = basicStrategy.CheckMDSoftTable(playerHandValue, dealerUpCard);
         }
+        else if (playerHandType == "H") {    
+            // Hard hands
+            strategies = basicStrategy.CheckMDHardTable(playerHandValue, dealerUpCard);
+        }
+
 
         // Reward if action aligns with basic strategy
         foreach (int strategy in strategies) {

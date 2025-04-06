@@ -70,7 +70,6 @@ public class GameManager : MonoBehaviour
     public Button bet500Button;
 
     // MLAgent Event
-    public event Action OnAwaitingAction;
     public event Action OnRoundOver;
 
 
@@ -194,9 +193,6 @@ public class GameManager : MonoBehaviour
         insuranceText.gameObject.SetActive(availability);
         yesInsuranceButton.gameObject.SetActive(availability);
         noInsuranceButton.gameObject.SetActive(availability);
-
-        // Triger ML AGENT Decision
-        OnAwaitingAction?.Invoke();
     }
 
     // Conclude round if player or dealer has Blackjack
@@ -237,6 +233,7 @@ public class GameManager : MonoBehaviour
             playerHandResultsText[i].text = "";
             playerBetsText[i].text = "";
 
+            playerHandIndicatorsText[i].gameObject.SetActive(false);
             playerHandValuesText[i].gameObject.SetActive(false);
             playerHandResultsText[i].gameObject.SetActive(false);
             playerBetsText[i].gameObject.SetActive(false);
@@ -309,9 +306,6 @@ public class GameManager : MonoBehaviour
                 splitButton.gameObject.SetActive(true);
             }
         }
-
-        // Triger ML AGENT Decision
-        OnAwaitingAction?.Invoke();
     }
 
     // Player hits
@@ -603,6 +597,7 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
+        insuranceText.gameObject.SetActive(false);
         yesInsuranceButton.gameObject.SetActive(false);
         noInsuranceButton.gameObject.SetActive(false);
     }
