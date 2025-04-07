@@ -1,0 +1,38 @@
+{
+    "Wingman": {
+        "checkpoints": [
+            {
+                "steps": 499992,
+                "file_path": "results\\BS8DTC0\\Wingman\\Wingman-499992.onnx",
+                "reward": 5.504036909113765,
+                "creation_time": 1744057828.967399,
+                "auxillary_file_paths": [
+                    "results\\BS8DTC0\\Wingman\\Wingman-499992.pt"
+                ]
+            },
+            {
+                "steps": 500009,
+                "file_path": "results\\BS8DTC0\\Wingman\\Wingman-500009.onnx",
+                "reward": 5.501936413488004,
+                "creation_time": 1744057828.999114,
+                "auxillary_file_paths": [
+                    "results\\BS8DTC0\\Wingman\\Wingman-500009.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 500009,
+            "file_path": "results\\BS8DTC0\\Wingman.onnx",
+            "reward": 5.501936413488004,
+            "creation_time": 1744057828.999114,
+            "auxillary_file_paths": [
+                "results\\BS8DTC0\\Wingman\\Wingman-500009.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.2.2+cu121"
+    }
+}
