@@ -26,7 +26,7 @@ public class GUI_WingmanAgent : MonoBehaviour {
         string debugEpisode = "Episode: " + _wingmanAgent.CurrentEpisode + " - Step: " + _wingmanAgent.StepCount;
         string debugReward = "Reward: " + _wingmanAgent.CumulativeReward.ToString();
 
-        float edge = (_wingmanAgent.UnitsWon - _wingmanAgent.UnitsLost) / _wingmanAgent.UnitsWagered;
+        float edge = (_wingmanAgent.UnitsWon - _wingmanAgent.UnitsLost) / _wingmanAgent.UnitsWagered * 100.0f;
 
         string debugEdge = "Edge: " + edge.ToString("F2") + "%";
 
