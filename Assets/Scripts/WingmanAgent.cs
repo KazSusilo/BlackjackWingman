@@ -17,23 +17,19 @@ public class WingmanAgent : Agent {
     public BasicStrategy basicStrategy;
 
     // Variables regarding episode
-    private int _currentEpisode;
-    private float _cumulativeReward;
-    public TMP_Text currentEpisodeText;
-    public TMP_Text cumulativeRewardText;
-    public TMP_Text currentStepText;
+    [HideInInspector] public int CurrentEpisode;
+    [HideInInspector] public float CumulativeReward;
+    [HideInInspector] public TMP_Text currentEpisodeText;
 
     // Variables regarding training
     private bool _terminalPhase;
     private bool _insuranceOffered;
 
     // Variables regarding performance
-    private int _totalWins;     // units of $2
-    private int _totalPushes;
-    private int _totalLosses;
-    public TMP_Text totalWinsText;
-    public TMP_Text totalPushesText;
-    public TMP_Text totalLossesText;
+    [HideInInspector] public float UnitsWagered; // units of $2
+    [HideInInspector] public float UnitsWon;
+    [HideInInspector] public float UnitsPushed;
+    [HideInInspector] public float UnitsLost;
     
     // True Count we want the agent to train on 
     [SerializeField] private int _trueCount;
@@ -47,20 +43,18 @@ public class WingmanAgent : Agent {
         //Academy.Instance.AutomaticSteppingEnabled = false;
 
         // Initialize episode variables
-        _currentEpisode = 0;
-        _cumulativeReward = 0;
-        currentEpisodeText.text = "Episode: " + _currentEpisode.ToString();
-        cumulativeRewardText.text = "Reward: " + _cumulativeReward.ToString();
-        currentStepText.text = "Step: " + StepCount.ToString();
+        CurrentEpisode = 0;
+        CumulativeReward = 0;
         
         // Initialize training variables
         _terminalPhase = false;
         _insuranceOffered = false;
 
         // Initialize performance variables
-        _totalWins = 0;
-        _totalLosses = 0;
-        _totalPushes = 0;
+        UnitsWagered = 0.0f;
+        UnitsWon = 0.0f;
+        UnitsLost = 0.0f;
+        UnitsPushed = 0.0f;
 
         // Listeners for request decision and round end
         gameManager.OnRoundOver += OnRoundOver;
@@ -71,11 +65,8 @@ public class WingmanAgent : Agent {
         Debug.Log("Begin New Episode");
 
         // Reset episode variables
-        _currentEpisode++;
-        _cumulativeReward = 0f;
-        currentEpisodeText.text = "Episode: " + _currentEpisode.ToString();
-        cumulativeRewardText.text = "Reward: " + _cumulativeReward.ToString();
-        currentStepText.text = "Step: " + StepCount.ToString();
+        CurrentEpisode++;
+        CumulativeReward = 0f;
         
         // Reset training variables
         _terminalPhase = false;
@@ -90,6 +81,7 @@ public class WingmanAgent : Agent {
                 gameManager.DealClicked();
 
                 // Edge case - don't generate 'frame1' terminating round states
+                UnitsWagered += 1.0f;
                 if (!CheckFrame1TerminalState()) {
                     break;
                 }
@@ -339,12 +331,15 @@ public class WingmanAgent : Agent {
                         gameManager.HitClicked();
                         break;
                     case 2: // Double
+                        UnitsWagered += 1.0f;
                         gameManager.DoubleClicked();
                         break;
                     case 3: // Split
+                        UnitsWagered += 1.0f;
                         gameManager.SplitClicked();
                         break;
                     case 4: // Take Insurance
+                        UnitsWagered += 0.5f;
                         gameManager.InsuranceClicked(true); 
                         break;
                     case 5: // Refuse Insurance
@@ -374,19 +369,15 @@ public class WingmanAgent : Agent {
         // Calculate reward based on the outcome of the round
         float roundReward = 0.0f;
         float.TryParse(gameManager.rewardText.text, out roundReward);
-        float roundReward_normalzied = roundReward / 8.0f;
+        float roundReward_normalzied = roundReward / 4.0f;
         RewardAgent(roundReward_normalzied);
 
         // Update Performance Variables (insight purposes)
-        UpdatePerformanceVariables(roundReward / 2.0f);
+        UpdatePerformanceVariables(roundReward / 2.0f);     // divided by betting units
         void UpdatePerformanceVariables(float rewardUnits) {
-            _totalWins += (0.0f < rewardUnits) ? (int)rewardUnits : 0;
-            _totalPushes += (rewardUnits == 0.0f) ? 1 : 0;
-            _totalLosses += (rewardUnits < 0.0f) ? (int)-rewardUnits : 0;
-
-            totalWinsText.text = "W: " + _totalWins;
-            totalPushesText.text = "P : " + _totalPushes;  
-            totalLossesText.text = "L : " + _totalLosses;
+            UnitsWon += (0.0f < rewardUnits) ? rewardUnits : 0.0f;
+            UnitsPushed += (rewardUnits == 0.0f) ? 1.0f : 0.0f;
+            UnitsLost += (rewardUnits < 0.0f) ? -rewardUnits : 0.0f;
         }
 
         // Flag terminal phase
@@ -404,8 +395,7 @@ public class WingmanAgent : Agent {
     // Reward or penalize agent with given amount
     private void RewardAgent(float amount) {
         AddReward(amount);
-        _cumulativeReward = GetCumulativeReward();
-        cumulativeRewardText.text = "Reward: " + _cumulativeReward.ToString();
+        CumulativeReward = GetCumulativeReward();
     }
 
     // Provide small reward if given action aligns with Basic Strategy
@@ -457,20 +447,17 @@ public class WingmanAgent : Agent {
         GetActionAvailability();
         // Skip BJ wins
         if (playerBJ && !dealerBJ) {
-            _totalWins++;
-            totalWinsText.text = "W: " + _totalWins;
+            UnitsWon += 1.5f;
             frame1 = true;
         }
         // Skip BJ pushes
         else if (playerBJ && dealerBJ && !_insuranceOffered) {
-            _totalPushes++;
-            totalPushesText.text = "P : " + _totalPushes;
+            UnitsPushed += 1.0f;
             frame1 = true;
         }
         // Skip BJ losses
         else if (!playerBJ && dealerBJ && !_insuranceOffered) {
-            _totalLosses++;
-            totalLossesText.text = "L : " + _totalLosses;
+            UnitsLost += 1.0f;
             frame1 = true;
         }
         
