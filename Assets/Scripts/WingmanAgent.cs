@@ -289,6 +289,7 @@ public class WingmanAgent : Agent {
     // Manually supply OnActionsReceived() input
     public override void Heuristic(in ActionBuffers actionsOut) {
         var discreteActionsOut = actionsOut.DiscreteActions;
+        discreteActionsOut[0] = -1;     // do nothing
         if (Input.GetKey(KeyCode.S)) {
             discreteActionsOut[0] = 0;  // stand
         }
@@ -312,8 +313,14 @@ public class WingmanAgent : Agent {
     // Utilize output from NN
     public override void OnActionReceived(ActionBuffers actions) {
         Debug.Log("ActionReceived");
+        // Edge case - don't try to do actions when round is already over
+        if (_terminalPhase) {
+            return;
+        }
+
         int action = actions.DiscreteActions[0];
-        
+        print("Action: " + action);
+
         // Reward shaping with basic strategy
         RewardShape(action);  // eventually remove
         
@@ -322,7 +329,7 @@ public class WingmanAgent : Agent {
         bool PerformAction(int action) {
             bool performedAction = false;
             List<bool> actionAvailability = GetActionAvailability();
-            if (actionAvailability[action]) {
+            if (action != -1 && actionAvailability[action]) {
                 performedAction = true;
                 switch (action) {
                     case 0: // Stand
@@ -351,7 +358,7 @@ public class WingmanAgent : Agent {
 
         // Penalty given for attempting an illegal action
         if (!performed) {
-            RewardAgent((-2.0f * 2.0f) / MaxStep);   // Simplify (2 / 37) ~ -0.054
+            RewardAgent((-2.0f * 2f) / MaxStep);   // Simplify (2 / 37) ~ -0.054
         }
     }
 

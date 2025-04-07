@@ -1,0 +1,56 @@
+{
+    "Wingman": {
+        "checkpoints": [
+            {
+                "steps": 499992,
+                "file_path": "results\\8D\\Wingman\\Wingman-499992.onnx",
+                "reward": -0.01873247937542769,
+                "creation_time": 1743957457.2608044,
+                "auxillary_file_paths": [
+                    "results\\8D\\Wingman\\Wingman-499992.pt"
+                ]
+            },
+            {
+                "steps": 500009,
+                "file_path": "results\\8D\\Wingman\\Wingman-500009.onnx",
+                "reward": -0.019056014608645786,
+                "creation_time": 1743957457.2952964,
+                "auxillary_file_paths": [
+                    "results\\8D\\Wingman\\Wingman-500009.pt"
+                ]
+            },
+            {
+                "steps": 500009,
+                "file_path": "results\\8D\\Wingman\\Wingman-500009.onnx",
+                "reward": null,
+                "creation_time": 1743960734.8342798,
+                "auxillary_file_paths": [
+                    "results\\8D\\Wingman\\Wingman-500009.pt"
+                ]
+            },
+            {
+                "steps": 500009,
+                "file_path": "results\\8D\\Wingman\\Wingman-500009.onnx",
+                "reward": null,
+                "creation_time": 1743960758.6548042,
+                "auxillary_file_paths": [
+                    "results\\8D\\Wingman\\Wingman-500009.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 500009,
+            "file_path": "results\\8D\\Wingman.onnx",
+            "reward": null,
+            "creation_time": 1743960758.6548042,
+            "auxillary_file_paths": [
+                "results\\8D\\Wingman\\Wingman-500009.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.2.2+cu121"
+    }
+}
