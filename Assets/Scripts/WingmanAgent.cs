@@ -26,7 +26,8 @@ public class WingmanAgent : Agent {
     private bool _insuranceOffered;
 
     // Variables regarding performance
-    [HideInInspector] public float UnitsWagered; // units of $2
+    [HideInInspector] public float BetUnit;
+    [HideInInspector] public float UnitsWagered;
     [HideInInspector] public float UnitsWon;
     [HideInInspector] public float UnitsPushed;
     [HideInInspector] public float UnitsLost;
@@ -51,6 +52,7 @@ public class WingmanAgent : Agent {
         _insuranceOffered = false;
 
         // Initialize performance variables
+        BetUnit = 10.0f;
         UnitsWagered = 0.0f;
         UnitsWon = 0.0f;
         UnitsLost = 0.0f;
@@ -78,10 +80,13 @@ public class WingmanAgent : Agent {
             while (true) {
                 // Reset player balance to 100 and deal new round
                 player.AdjustBalance(100.0f - player.GetBalance());
+
+                // Make appropriate bet based on trueCount
+                // Figure that out...
+                UnitsWagered += 1.0f;
                 gameManager.DealClicked();
 
                 // Edge case - don't generate 'frame1' terminating round states
-                UnitsWagered += 1.0f;
                 if (!CheckFrame1TerminalState()) {
                     break;
                 }
@@ -138,11 +143,11 @@ public class WingmanAgent : Agent {
                     if (gameManager.playerBetsText[i].gameObject.activeSelf) {
                         float bet = -4;
                         float.TryParse(gameManager.playerBetsText[i].text, out bet);
-                        handBet_normalized = (bet - 2.0f) / 2.0f;      // $2 to $4
+                        handBet_normalized = (bet - BetUnit) / 2f;      // BetUnit to 2xBetUnit
                     }
 
                     // Hand Results (-1 to 1) | -2 Invalid
-                    if (gameManager.playerHandResultsText[i].gameObject.activeSelf) {
+                    if (_terminalPhase) {
                         string result = gameManager.playerHandResultsText[i].text.ToString();
                         if (result == "Win") {
                             handResult_encoded = 1.0f;
@@ -369,11 +374,11 @@ public class WingmanAgent : Agent {
         // Calculate reward based on the outcome of the round
         float roundReward = 0.0f;
         float.TryParse(gameManager.rewardText.text, out roundReward);
-        float roundReward_normalzied = roundReward / 4.0f;
+        float roundReward_normalzied = roundReward / (2 * BetUnit);
         RewardAgent(roundReward_normalzied);
 
         // Update Performance Variables (insight purposes)
-        UpdatePerformanceVariables(roundReward / 2.0f);     // divided by betting units
+        UpdatePerformanceVariables(roundReward / BetUnit);     // divided by betting units
         void UpdatePerformanceVariables(float rewardUnits) {
             UnitsWon += (0.0f < rewardUnits) ? rewardUnits : 0.0f;
             UnitsPushed += (rewardUnits == 0.0f) ? 1.0f : 0.0f;

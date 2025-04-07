@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
     public PlayerScript player;
     public int handIndex = 0;
     private float totalBet = 0f;
-    private float startingBet = 2f;
+    private float startingBet = 10.0f;
     private List<float> playerBets = new List<float> {0f};
     private List<float> playerSideBets = new List<float> {0f};  // insurance, etc.
     public float playerTotalReward;
