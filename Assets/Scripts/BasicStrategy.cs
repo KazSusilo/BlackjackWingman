@@ -83,8 +83,8 @@ public class BasicStrategy : MonoBehaviour {
         {(15, 7 ), new string[] {"H"     }},
         {(15, 8 ), new string[] {"H"     }},
         {(15, 9 ), new string[] {"H"     }},
-        {(15, 10), new string[] {"H", "R"}},
-        {(15, 11), new string[] {"H", "R"}},
+        {(15, 10), new string[] {"R", "H"}},
+        {(15, 11), new string[] {"R", "H"}},
 
         {(16, 2 ), new string[] {"S"     }},
         {(16, 3 ), new string[] {"S"     }},
@@ -93,9 +93,9 @@ public class BasicStrategy : MonoBehaviour {
         {(16, 6 ), new string[] {"S"     }},
         {(16, 7 ), new string[] {"H"     }},
         {(16, 8 ), new string[] {"H"     }},
-        {(16, 9 ), new string[] {"H", "R"}},
-        {(16, 10), new string[] {"H", "R"}},
-        {(16, 11), new string[] {"H", "R"}},
+        {(16, 9 ), new string[] {"R", "H"}},
+        {(16, 10), new string[] {"R", "H"}},
+        {(16, 11), new string[] {"R", "H"}},
 
         {(17, 2 ), new string[] {"S"     }},
         {(17, 3 ), new string[] {"S"     }},
@@ -106,7 +106,7 @@ public class BasicStrategy : MonoBehaviour {
         {(17, 8 ), new string[] {"S"     }},
         {(17, 9 ), new string[] {"S"     }},
         {(17, 10), new string[] {"S"     }},
-        {(17, 11), new string[] {"S", "R"}},
+        {(17, 11), new string[] {"R", "S"}},
 
         //H18+ always stand
     };
@@ -281,7 +281,7 @@ public class BasicStrategy : MonoBehaviour {
         {(8, 8 ), new string[] {"P"     }},
         {(8, 9 ), new string[] {"P"     }},
         {(8, 10), new string[] {"P"     }},
-        {(8, 11), new string[] {"P", "R"}},
+        {(8, 11), new string[] {"R", "P"}},
 
         {(9, 2 ), new string[] {"P"     }},
         {(9, 3 ), new string[] {"P"     }},

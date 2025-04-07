@@ -13,7 +13,7 @@ public class WingmanAgent : Agent {
     public PlayerScript player;
     public PlayerScript dealer;
     public GameManager gameManager;
-    public ShoeScript shoe;
+    public ShoeScript Shoe;
     public BasicStrategy basicStrategy;
 
     // Variables regarding episode
@@ -22,8 +22,10 @@ public class WingmanAgent : Agent {
     [HideInInspector] public TMP_Text currentEpisodeText;
 
     // Variables regarding training
+    private bool _environmentReset;
     private bool _terminalPhase;
     private bool _insuranceOffered;
+    private int? _trueCountTraining;    // trueCount to train on
 
     // Variables regarding performance
     [HideInInspector] public float BetUnit;
@@ -31,9 +33,6 @@ public class WingmanAgent : Agent {
     [HideInInspector] public float UnitsWon;
     [HideInInspector] public float UnitsPushed;
     [HideInInspector] public float UnitsLost;
-    
-    // True Count we want the agent to train on 
-    [SerializeField] private int _trueCount;
 
 
     // Called when the Agent is first created 
@@ -48,8 +47,10 @@ public class WingmanAgent : Agent {
         CumulativeReward = 0;
         
         // Initialize training variables
+        _environmentReset = false;
         _terminalPhase = false;
         _insuranceOffered = false;
+        _trueCountTraining = 0;  // null: train across all counts
 
         // Initialize performance variables
         BetUnit = 10.0f;
@@ -75,23 +76,41 @@ public class WingmanAgent : Agent {
         _insuranceOffered = false;
         
         // Generate a Blackjack round
+        _environmentReset = false;
         GenerateRound();
         void GenerateRound() {
             while (true) {
-                // Reset player balance to 100 and deal new round
-                player.AdjustBalance(100.0f - player.GetBalance());
+                // Reset any game state to betting/deal state
+                ResetRound();
+                void ResetRound() {
+                    // Handle insurance offer
+                    if (gameManager.noInsuranceButton.gameObject.activeSelf) {
+                        gameManager.InsuranceClicked(false);
+                    }
+            
+                    // Handle as many hands as necessary
+                    while (!gameManager.dealButton.gameObject.activeSelf) {
+                        gameManager.StandClicked();
+                    }
+                }
 
-                // Make appropriate bet based on trueCount
-                // Figure that out...
-                UnitsWagered += 1.0f;
+                // Reset player balance to 100
+                player.AdjustBalance(100.0f - player.GetBalance());
                 gameManager.DealClicked();
 
-                // Edge case - don't generate 'frame1' terminating round states
-                if (!CheckFrame1TerminalState()) {
-                    break;
+                // Check if valid shoe to play
+                if (_trueCountTraining == null ||  Shoe.trueCount == _trueCountTraining) {
+                    // valid shoe, add wager
+                    UnitsWagered += 1.0f;   // valid shoe, add wager
+                    // Edge case - don't train on 'frame 1' terminating round states
+                    // frame1 terminating rounds still used for 'edge' calculation in OnRoundOver()
+                    if (!CheckFrame1TerminalState()) {
+                        break;
+                    }
                 }
             }
         }
+        _environmentReset = true;
     }
 
     // Gather information about the current state of the environment
@@ -228,14 +247,14 @@ public class WingmanAgent : Agent {
         void CollectCountObservations(VectorSensor sensor) {
             // Count observations (normalized)
             // Running count (-1 to 1)
-            int totalDecks = shoe.totalCards / 52;
+            int totalDecks = Shoe.totalCards / 52;
             int maxRunningCount = 20 * totalDecks;
-            int runningCount = shoe.runningCount;
+            int runningCount = Shoe.runningCount;
             float runningCount_normalized = (float)runningCount / (float)maxRunningCount;
 
             // True count (-1 to 1)
             int maxTrueCount = 52;
-            int trueCount = shoe.trueCount;
+            int trueCount = Shoe.trueCount;
             float trueCount_normalized = (float)trueCount / (float)maxTrueCount;
 
             // Add 2 observations
@@ -243,11 +262,11 @@ public class WingmanAgent : Agent {
             sensor.AddObservation(trueCount_normalized);
         }
 
-        // Collect observations regarding action availability [6]
+        // Collect observations regarding action availability [7]
         CollectActionAvailabilityObservations(sensor);
         void CollectActionAvailabilityObservations(VectorSensor sensor) {
             // Action Availability (encoded) (0 or 1)
-            float[] actionAvailability = new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; // S, H, D, P, Y, N
+            float[] actionAvailability = new float[] {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; // S, H, D, P, Y, N, R
             List<bool> availabilities = GetActionAvailability();
             for (int i = 0; i < availabilities.Count; i++) {
                 float availability_encoded = 0.0f;
@@ -257,8 +276,8 @@ public class WingmanAgent : Agent {
                 actionAvailability[i] = availability_encoded;
             }
 
-            // Add 6 observations
-            sensor.AddObservation(actionAvailability);  // [6]
+            // Add 7 observations
+            sensor.AddObservation(actionAvailability);  // [7]
         }
 
         // Collect obervations regarding the player's side bet(s) [1]
@@ -366,8 +385,11 @@ public class WingmanAgent : Agent {
     public void OnRoundOver() {
         Debug.Log("Ending episode");
 
-        // Edge case - don't process 'frame1' terminating round states
-        if (CheckFrame1TerminalState()) {
+        // Edge case - don't process 'GenerateRound()' events 
+        if (!_environmentReset) {
+            if (CheckFrame1TerminalState()) {
+                TallyFrame1TerminalResults();   // include for 'edge' calculation
+            }
             return;
         }
 
@@ -384,6 +406,10 @@ public class WingmanAgent : Agent {
             UnitsPushed += (rewardUnits == 0.0f) ? 1.0f : 0.0f;
             UnitsLost += (rewardUnits < 0.0f) ? -rewardUnits : 0.0f;
         }
+
+        Debug.Log("Win: " + UnitsWon);
+        Debug.Log("Push: " + UnitsPushed);
+        Debug.Log("Lost: " + UnitsLost);
 
         // Flag terminal phase
         if (!_terminalPhase) {
@@ -436,8 +462,15 @@ public class WingmanAgent : Agent {
 
 
         // Reward if action aligns with basic strategy
-        foreach (int strategy in strategies) {
-            if (action == strategy) {
+        List<bool> actionAvailability = GetActionAvailability();
+        for (int i = 0; i < strategies.Count; i++){
+            int strategy = strategies[i];
+
+            if (actionAvailability[strategy] && action != strategy) {
+                // Don't reward if preferred action was available
+                break;
+            }
+            else if (action == strategy) {
                 AddReward(.075f);
             }
         }
@@ -452,21 +485,44 @@ public class WingmanAgent : Agent {
         GetActionAvailability();
         // Skip BJ wins
         if (playerBJ && !dealerBJ) {
-            UnitsWon += 1.5f;
             frame1 = true;
         }
         // Skip BJ pushes
         else if (playerBJ && dealerBJ && !_insuranceOffered) {
-            UnitsPushed += 1.0f;
             frame1 = true;
         }
         // Skip BJ losses
         else if (!playerBJ && dealerBJ && !_insuranceOffered) {
-            UnitsLost += 1.0f;
             frame1 = true;
         }
         
         return frame1;
+    }
+
+    // Tally BJ wins/losses/pushes into Units Won/Pushed/Lost
+    private void TallyFrame1TerminalResults() {
+        bool playerBJ = player.handTypes[0] == "BJ";
+        bool dealerBJ = dealer.handTypes[0] == "BJ";
+        GetActionAvailability();
+        // BJ wins
+        if (playerBJ && !dealerBJ) {
+            Debug.Log("BJ WIN");
+            UnitsWon += 1.5f;
+        }
+        // BJ pushes
+        else if (playerBJ && dealerBJ && !_insuranceOffered) {
+            Debug.Log("BJ Push");
+            UnitsPushed += 1.0f;
+        }
+        // BJ losses
+        else if (!playerBJ && dealerBJ && !_insuranceOffered) {
+            Debug.Log("BJ Loss");
+            UnitsLost += 1.0f;
+        }
+
+        Debug.Log("Win: " + UnitsWon);
+        Debug.Log("Push: " + UnitsPushed);
+        Debug.Log("Lost: " + UnitsLost);
     }
 
     // Returns a list of bools indicating which actions are available
@@ -478,6 +534,7 @@ public class WingmanAgent : Agent {
         bool canSplit = gameManager.splitButton.gameObject.activeSelf;
         bool canTakeInsurance = gameManager.yesInsuranceButton.gameObject.activeSelf;
         bool canRefuseInsurance = gameManager.noInsuranceButton.gameObject.activeSelf;
+        bool canSurrender = false;  // support future implementation of surrender
 
         // Flag insurance offered
         if (!_insuranceOffered && canTakeInsurance) {
@@ -492,6 +549,7 @@ public class WingmanAgent : Agent {
         actionAvailability.Add(canSplit);
         actionAvailability.Add(canTakeInsurance);
         actionAvailability.Add(canRefuseInsurance);
+        actionAvailability.Add(canSurrender);
         return actionAvailability;
     }
 }

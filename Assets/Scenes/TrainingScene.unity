@@ -2805,7 +2805,7 @@ MonoBehaviour:
   player: {fileID: 1142418440}
   dealer: {fileID: 190586816}
   gameManager: {fileID: 911770879}
-  shoe: {fileID: 784388279}
+  Shoe: {fileID: 784388279}
   basicStrategy: {fileID: 1910110561}
   CurrentEpisode: 0
   CumulativeReward: 0
@@ -2815,7 +2815,6 @@ MonoBehaviour:
   UnitsWon: 0
   UnitsPushed: 0
   UnitsLost: 0
-  _trueCount: 0
 --- !u!114 &331502269
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2829,7 +2828,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 36
+    VectorObservationSize: 37
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
