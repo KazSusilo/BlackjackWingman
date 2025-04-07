@@ -50,7 +50,7 @@ public class WingmanAgent : Agent {
         _environmentReset = false;
         _terminalPhase = false;
         _insuranceOffered = false;
-        _trueCountTraining = 0;  // null: train across all counts
+        _trueCountTraining = null;  // null: train across all counts
 
         // Initialize performance variables
         BetUnit = 10.0f;
@@ -119,7 +119,7 @@ public class WingmanAgent : Agent {
 
         // Flag if in deicision mode (0) or terminal mode (1)
         float terminalPhase_encoded = (_terminalPhase == true) ? 1.0f : 0.0f;
-        sensor.AddObservation(_terminalPhase);
+        sensor.AddObservation(_terminalPhase);  // [1]
         
         // Collect observations regarding the player's hand(s) [24]
         CollectHandObservations(sensor);
@@ -142,7 +142,7 @@ public class WingmanAgent : Agent {
                 float handBet_normalized = 0.0f;
                 float handResult_encoded = -2.0f;
                 if (handExistence[i] == 1.0f) {
-                    // Hand Type (0 to 1) | -1 Invald
+                    // Hand Type (0 to 2) | -1 Invald
                     string handType = player.handTypes[i];
                     if (handType == "H") {
                         handType_encoded = 0.0f;

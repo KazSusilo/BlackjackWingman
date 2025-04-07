@@ -1,0 +1,29 @@
+behaviors:
+  Wingman:
+    trainer_type: ppo  # PPO is stable and sample-efficient, ideal for turn-based games like Blackjack
+    
+    hyperparameters:
+      batch_size: 1024                # Larger batch for more stable policy updates (enough if using many env steps)
+      buffer_size: 10240              # Gives agent more varied experience per update; balances learning stability
+      learning_rate: 0.0003           # Slower learning to avoid overshooting; Blackjack is strategy-heavy
+      beta: 0.005                     # Entropy regularization strength to encourage exploration (but not too random)
+      epsilon: 0.2                    # PPO clip range for policy updates; standard and stable
+      lambd: 0.95                     # GAE lambda for bias/variance tradeoff; 0.95 gives smooth learning
+      num_epoch: 3                    # Number of passes through buffer; 3 is a good baseline
+      learning_rate_schedule: linear  # Allows the agent to fine-tune policy as training progresses
+
+    network_settings:
+      normalize: false          # Input normalization handled in CollectObservations
+      hidden_units: 128         # Enough capacity to learn Blackjack's optimal policy without overfitting
+      num_layers: 2             # Slightly deeper network to capture conditional strategies (e.g., soft vs hard hands)
+      vis_encode_type: simple   # Use simple encoder (no visual obs assumed for Blackjack)
+
+    reward_signals:
+      extrinsic:
+        gamma: .99              # Discount slight rewards from following Basic Strategy
+        strength: 1.0           # Keep default strength unless using multiple reward signals
+
+    keep_checkpoints: 5         # Save progress periodically
+    max_steps: 10000000         # More steps for learning optimal play; adjust based on convergence  500,000 ~= 35min -> 10,000,000
+    time_horizon: 64            # Blackjack episodes maximally last 37 decisions, usually last 1-3 decisions
+    summary_freq: 10000         # Log summaries less frequently to reduce overhead (can adjust as needed)
