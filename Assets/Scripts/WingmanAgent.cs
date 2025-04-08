@@ -50,7 +50,7 @@ public class WingmanAgent : Agent {
         _environmentReset = false;
         _terminalPhase = false;
         _insuranceOffered = false;
-        _trueCountTraining = null;  // null: train across all counts
+        _trueCountTraining = 0;  // null: train across all counts
 
         // Initialize performance variables
         BetUnit = 10.0f;
@@ -338,7 +338,7 @@ public class WingmanAgent : Agent {
         print("Action: " + action);
 
         // Reward shaping with basic strategy
-        RewardShape(action);  // eventually remove
+        // RewardShape(action);  // eventually remove
         
         // The agent attempts to perform given action (stand, hit, etc)
         bool performed = PerformAction(action);

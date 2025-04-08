@@ -1,0 +1,65 @@
+{
+    "Wingman": {
+        "checkpoints": [
+            {
+                "steps": 8499989,
+                "file_path": "results\\8DFinal\\Wingman\\Wingman-8499989.onnx",
+                "reward": -0.04635280441212398,
+                "creation_time": 1744107125.0085664,
+                "auxillary_file_paths": [
+                    "results\\8DFinal\\Wingman\\Wingman-8499989.pt"
+                ]
+            },
+            {
+                "steps": 8999989,
+                "file_path": "results\\8DFinal\\Wingman\\Wingman-8999989.onnx",
+                "reward": -0.035012285004962576,
+                "creation_time": 1744109284.89915,
+                "auxillary_file_paths": [
+                    "results\\8DFinal\\Wingman\\Wingman-8999989.pt"
+                ]
+            },
+            {
+                "steps": 9499989,
+                "file_path": "results\\8DFinal\\Wingman\\Wingman-9499989.onnx",
+                "reward": 0.030927835666027265,
+                "creation_time": 1744111427.5530045,
+                "auxillary_file_paths": [
+                    "results\\8DFinal\\Wingman\\Wingman-9499989.pt"
+                ]
+            },
+            {
+                "steps": 9999989,
+                "file_path": "results\\8DFinal\\Wingman\\Wingman-9999989.onnx",
+                "reward": 0.03333333333333333,
+                "creation_time": 1744113566.6065383,
+                "auxillary_file_paths": [
+                    "results\\8DFinal\\Wingman\\Wingman-9999989.pt"
+                ]
+            },
+            {
+                "steps": 10000006,
+                "file_path": "results\\8DFinal\\Wingman\\Wingman-10000006.onnx",
+                "reward": 0.040983606557377046,
+                "creation_time": 1744113566.6459649,
+                "auxillary_file_paths": [
+                    "results\\8DFinal\\Wingman\\Wingman-10000006.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 10000006,
+            "file_path": "results\\8DFinal\\Wingman.onnx",
+            "reward": 0.040983606557377046,
+            "creation_time": 1744113566.6459649,
+            "auxillary_file_paths": [
+                "results\\8DFinal\\Wingman\\Wingman-10000006.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.2.2+cu121"
+    }
+}
