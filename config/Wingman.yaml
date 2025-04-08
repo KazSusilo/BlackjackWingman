@@ -1,6 +1,6 @@
 behaviors:
   Wingman:
-    trainer_type: ppo  # PPO is stable and sample-efficient, ideal for turn-based games like Blackjack
+    trainer_type: ppo 
     
     hyperparameters:
       batch_size: 1024                # Larger batch for more stable policy updates (enough if using many env steps)

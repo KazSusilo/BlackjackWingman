@@ -25,7 +25,6 @@ public class WingmanAgent : Agent {
     private bool _environmentReset;
     private bool _terminalPhase;
     private bool _insuranceOffered;
-    private int? _trueCountTraining;    // trueCount to train on
 
     // Variables regarding performance
     [HideInInspector] public float BetUnit;
@@ -33,6 +32,16 @@ public class WingmanAgent : Agent {
     [HideInInspector] public float UnitsWon;
     [HideInInspector] public float UnitsPushed;
     [HideInInspector] public float UnitsLost;
+
+    // Specific variables to simulate
+    // null values simulates any scenario of the variable type
+    private int? _runningCountScenario;         // runningCount to simulate     (+- 20 * Total Decks)
+    private int? _trueCountScenario;            // trueCount to simulate        (+- 52)
+    private bool? _countPreserved;              // count preserved after dealing (NEED TO ADD)
+    private int? _playerHandValueScenario;      // playerHandValue to simulate  (4-21)
+    private string? _playerHandTypeScenario;    // playerHandType to simulate   (H, S, BJ)
+    private bool? _playerPairsScenario;         // playerPairs to simulate      (true, false) (need hand value & hand type
+    private int? _dealerUpCardScenario;         // dealerUpCard to simulate     (2-11)
 
 
     // Called when the Agent is first created 
@@ -50,7 +59,16 @@ public class WingmanAgent : Agent {
         _environmentReset = false;
         _terminalPhase = false;
         _insuranceOffered = false;
-        _trueCountTraining = 0;  // null: train across all counts
+
+        // Specific scenarios
+        // null: simulate all
+        _runningCountScenario = null;
+        _trueCountScenario = null;
+        _countPreserved = null;         // Need to implement
+        _playerHandValueScenario = null;
+        _playerHandTypeScenario = null;
+        _playerPairsScenario = null;    // need to implement
+        _dealerUpCardScenario = null;
 
         // Initialize performance variables
         BetUnit = 10.0f;
@@ -70,10 +88,6 @@ public class WingmanAgent : Agent {
         // Reset episode variables
         CurrentEpisode++;
         CumulativeReward = 0f;
-        
-        // Reset training variables
-        _terminalPhase = false;
-        _insuranceOffered = false;
         
         // Generate a Blackjack round
         _environmentReset = false;
@@ -98,19 +112,33 @@ public class WingmanAgent : Agent {
                 player.AdjustBalance(100.0f - player.GetBalance());
                 gameManager.DealClicked();
 
-                // Check if valid shoe to play
-                if (_trueCountTraining == null ||  Shoe.trueCount == _trueCountTraining) {
-                    // valid shoe, add wager
-                    UnitsWagered += 1.0f;   // valid shoe, add wager
+                // Check if valid scenario to play (if defined)
+                bool ValidScenario() {
+                    if (
+                        (_runningCountScenario == null || (Shoe.runningCount == _runningCountScenario)) &&
+                        (_trueCountScenario == null || (Shoe.trueCount == _trueCountScenario)) &&
+                        (_playerHandTypeScenario == null || (player.handTypes[0] == _playerHandTypeScenario)) &&
+                        (_playerHandValueScenario == null || (player.handValues[0] == _playerHandValueScenario)) &&
+                        //(_playerPairsScenario == null || player.hands[0][0].GetValue() == ) &&
+                        (_dealerUpCardScenario == null || (dealer.handValues[0] == _dealerUpCardScenario))
+                    ) { return true; }
+                    return false;
+                }
+                if (ValidScenario()) {
+                    UnitsWagered += 1.0f;   // valid round, add wager
                     // Edge case - don't train on 'frame 1' terminating round states
-                    // frame1 terminating rounds still used for 'edge' calculation in OnRoundOver()
                     if (!CheckFrame1TerminalState()) {
+                        // frame1 terminating rounds still used for 'edge' calculation in OnRoundOver()
                         break;
                     }
                 }
             }
         }
         _environmentReset = true;
+
+        // Reset training variables
+        _terminalPhase = false;
+        _insuranceOffered = false;
     }
 
     // Gather information about the current state of the environment
