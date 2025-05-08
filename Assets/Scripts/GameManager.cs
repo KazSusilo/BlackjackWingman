@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,9 +28,9 @@ public class GameManager : MonoBehaviour
 
     // Player 
     public PlayerScript player;
-    private int handIndex = 0;
+    public int handIndex = 0;
     private float totalBet = 0f;
-    private float startingBet = 500f;
+    private float startingBet = 10.0f;
     private List<float> playerBets = new List<float> {0f};
     private List<float> playerSideBets = new List<float> {0f};  // insurance, etc.
     public float playerTotalReward;
@@ -67,6 +68,9 @@ public class GameManager : MonoBehaviour
     public Button bet25Button;
     public Button bet100Button;
     public Button bet500Button;
+
+    // MLAgent Event
+    public event Action OnRoundOver;
 
 
     // Start is called before the first frame update
@@ -141,7 +145,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Deal initial cards to both player and dealer
-    private void DealClicked() {
+    public void DealClicked() {
         ClearTable();
         
         // Close and process betting
@@ -209,6 +213,9 @@ public class GameManager : MonoBehaviour
         roundText.gameObject.SetActive(false);
         rewardText.gameObject.SetActive(false);
 
+        // Remove buttons (agent)
+        DisableActionButtons();
+
         // Reset Player Variables
         player.ResetHand();
         handIndex = 0;
@@ -222,6 +229,11 @@ public class GameManager : MonoBehaviour
 
         // Player HUD Variables
         for (int i = 0; i < maxSplit; i++) {
+            playerHandValuesText[i].text = "";
+            playerHandResultsText[i].text = "";
+            playerBetsText[i].text = "";
+
+            playerHandIndicatorsText[i].gameObject.SetActive(false);
             playerHandValuesText[i].gameObject.SetActive(false);
             playerHandResultsText[i].gameObject.SetActive(false);
             playerBetsText[i].gameObject.SetActive(false);
@@ -269,7 +281,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // Edge case if hand is 21 (not BJ)
+        // Edge case if hand is 21
         if (handIndex < player.handValues.Count && player.handValues[handIndex] == 21) {
             StandClicked();
             return;
@@ -297,7 +309,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player hits
-    private void HitClicked() {
+    public void HitClicked() {
         // Hit current hand
         player.GetCard(handIndex);
         int playerHandValue = player.handValues[handIndex];
@@ -340,7 +352,7 @@ public class GameManager : MonoBehaviour
     */
 
     // Player stands
-    private void StandClicked() {
+    public void StandClicked() {
         // Stand current hand
         playerHandIndicatorsText[handIndex].gameObject.SetActive(false);
         handIndex++;
@@ -363,7 +375,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player Spltis
-    private void SplitClicked() {
+    public void SplitClicked() {
         // Add bet for additional hand
         playerBets.Add(0f);
         int newHandIndex = player.handValues.Count;
@@ -402,7 +414,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player doubles
-    private void DoubleClicked() {
+    public void DoubleClicked() {
         // Double bet of current hand
         ProcessBet(handIndex, startingBet);
 
@@ -415,7 +427,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Player takes/refuses insurance
-    private void InsuranceClicked(bool insured) {
+    public void InsuranceClicked(bool insured) {
         // Add side bet
         if (insured) {
             float insuranceBet = startingBet / 2;
@@ -502,6 +514,9 @@ public class GameManager : MonoBehaviour
         // Set UI for next move / hand / turn
         dealButton.gameObject.SetActive(true);
         SetBettingAvailability(true);
+
+        // Triger ML AGENT Round End
+        OnRoundOver?.Invoke();
     }
 
     // Dealer player's their turn and return their hand value
@@ -510,34 +525,25 @@ public class GameManager : MonoBehaviour
         blinder.GetComponent<Renderer>().enabled = false;               // Show hole card
         dealer.handValues[0] += dealer.GetHoleCard();                   // Add hole card to handValue
 
-        int dealerHandValue = dealer.handValues[0];
-        string dealerHandType = dealer.handTypes[0];
-        dealerHandValueText.text = dealerHandType + dealerHandValue.ToString();          // Update text
-
         // Dealer keeps hitting until stopping condition
         while (true) {
+            // Get dealer hand value and handType
+            int dealerHandValue = dealer.handValues[0];
+            string dealerHandType = dealer.handTypes[0];
+            dealerHandValueText.text = dealerHandType + dealerHandValue.ToString();  
+
             // Define stopping condition
-            dealerHandValue = dealer.handValues[0];
-            dealerHandType = dealer.handTypes[0];
             bool canHit = (dealerHandValue < 17 || dealerHandValue == 17 && dealerHandType == "S");
             if (!H17) {     // Game is S17
                 canHit = (dealerHandValue < 17);
             }
             
-            // Hit until unable
+            // Check if dealer should stop hitting
             if (!canHit) {
                 break;
             }
-            HitDealer();
+            dealer.GetCard(0);  // hit dealer
         }
-    }
-
-    // Dealer hits
-    private void HitDealer() {
-        dealer.GetCard(0);
-        int dealerHandValue = dealer.handValues[0];
-        string dealerHandType = dealer.handTypes[0];
-        dealerHandValueText.text = dealerHandType + dealerHandValue.ToString();
     }
 
     // Reward player appropriately for each of their hands
@@ -591,5 +597,8 @@ public class GameManager : MonoBehaviour
         standButton.gameObject.SetActive(false);
         splitButton.gameObject.SetActive(false);
         doubleButton.gameObject.SetActive(false);
+        insuranceText.gameObject.SetActive(false);
+        yesInsuranceButton.gameObject.SetActive(false);
+        noInsuranceButton.gameObject.SetActive(false);
     }
 }

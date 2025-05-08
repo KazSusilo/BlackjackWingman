@@ -5,9 +5,6 @@ using UnityEngine;
 public class CardScript : MonoBehaviour {
     // --- This script is specific to the 'card' object
 
-    // Access other script
-    public ShoeScript shoeScript;
-
     // Value of card, 2 of spades = 2, etc
     private int value = 0;
 

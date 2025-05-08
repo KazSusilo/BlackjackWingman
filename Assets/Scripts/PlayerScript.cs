@@ -11,7 +11,7 @@ public class PlayerScript : MonoBehaviour {
 
     // Player variables
     private bool isPlayer = true;
-    private float balance = 5000f;
+    private float balance = 100.0f;
     
     // Hand variables
     private int holeCard = 0;               // Specifically for dealer
@@ -132,17 +132,6 @@ public class PlayerScript : MonoBehaviour {
             }
         }
         return handValue;
-    }
-
-    // Check if player/dealer has blackjack
-    public bool HasBlackjack() {
-        int numOfHands = handValues.Count;
-        int numOfCards = hands[0].Count;
-        int handValue = handValues[0] + holeCard;
-        if ((numOfHands == 1) && (numOfCards == 2) && (handValue == 21)) {
-            return true;
-        }
-        return false;
     }
 
     // Split current hand
