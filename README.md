@@ -1,21 +1,12 @@
-# BlackjackWingman
-IMAGE HERE
+# Blackjack Wingman
+![BJWIN](https://github.com/user-attachments/assets/1bded119-6193-4e2d-b88d-dca601a03105)
 
 ## Summary
-Blackjack Wingman serves as a one stop shop on everything you need to beat Blackjack. Get everything you need with one application, including:
-* `Basic-Strategy Trainer`
-* `Card-Counting Trainer`
-* `Betting Trainer`
-* `Advanced-Strategy Trainer`
-* `Free Play`
-* `Game Assessment`
-
-## Run-Instructions
-BlackjackWingman\Builds\BlackjackWingman2.1\BlackjackWingman.exe
+Blackjack Wingman is an eductional application designed to teach the necessary skills to beat popular casino game Blackjack. Choose from 5+ training drills to practice skills such as Basic Strategy, Card Counting, and more!
 
 ## Features
 ### Free Play
-IMAGE HERE
+![FreePlay](https://github.com/user-attachments/assets/831872cd-66c1-43af-b9a6-2e478971d012)
 
 Using the Free Play Module, players can put their skills together and play to their heart's content. 
 
@@ -28,9 +19,18 @@ Adjustable Settings:
 * Starting balance
 
 ### AI-Simulation BETA
-IMAGE HERE
+![AIBeta](https://github.com/user-attachments/assets/7420079d-d402-4b99-a041-3b56f1b9ec29)
 
-Multiple AI bots with varying skill levels play out hands to demonstrate long-term affects of play on bank-roll
+
+Experimental AI bot designed to discover new winning strategies based on the specific table variation being played
+
+Adjustable Settings:
+* Number of decks
+* Table rules
+  * H17 toggle
+  * DAS toggle
+  * etc.
+* Bet Spread
 
 ## In-progress
 ### Basic-Strategy Trainer
