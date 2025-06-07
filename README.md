@@ -2,7 +2,7 @@
 ![BJWIN](https://github.com/user-attachments/assets/1bded119-6193-4e2d-b88d-dca601a03105)
 
 ## Summary
-Blackjack Wingman is an eductional application designed to teach the necessary skills to beat popular casino game Blackjack. Choose from 5+ training drills to practice skills such as Basic Strategy, Card Counting, and more!
+Blackjack Wingman is an eductional application designed to teach the necessary skills to beat casino game Blackjack. Choose from 5+ training drills to practice skills such as Basic Strategy, Card Counting, and more!
 
 ## Features
 ### Free Play
