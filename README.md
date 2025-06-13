@@ -1,89 +1,83 @@
 # Blackjack Wingman
+
 ![BJWIN](https://github.com/user-attachments/assets/1bded119-6193-4e2d-b88d-dca601a03105)
 
 ## Summary
-Blackjack Wingman is an eductional application designed to teach the necessary skills to beat casino game Blackjack. Choose from 5+ training drills to practice skills such as Basic Strategy, Card Counting, and more!
+
+**Blackjack Wingman** is an educational application designed to teach and train users on how to beat Blackjack. With a variety of interactive trainers, you can master key skills such as **Basic Strategy**, **Card Counting**, **Betting**, and **Deviations**.
+
+The application also includes a **Machine Learning (ML)** environment responsible for deriving the novel _Advanced Strategy_. Utilizing reinforcement learning, the model adapts based on the composition of the shoe, yielding up to a **20% edge over the house**.
 
 ## Features
+
 ### Free Play
-![FreePlay](https://github.com/user-attachments/assets/831872cd-66c1-43af-b9a6-2e478971d012)
 
-Using the Free Play Module, players can put their skills together and play to their heart's content. 
+Practice Blackjack freely in a simulated casino environment. Great for casual play or testing strategies in real time.
 
-Adjustable Settings:
-* Number of decks
-* Table rules
-  * H17 toggle
-  * DAS toggle
-  * etc.
-* Starting balance
+### Basic Strategy Trainer _(In Progress)_
 
-### AI-Simulation BETA
-![AIBeta](https://github.com/user-attachments/assets/7420079d-d402-4b99-a041-3b56f1b9ec29)
+Learn the mathematically optimal play for each hand. Players will receive real-time feedback and explanations to build foundational knowledge.
 
+### Card Counting Trainer _(In Progress)_
 
-Experimental AI bot designed to discover new winning strategies based on the specific table variation being played
+Train your card counting ability using various drills that simulate real-world dealing speeds. Improve your tracking of the running count and conversion to true count.
 
-Adjustable Settings:
-* Number of decks
-* Table rules
-  * H17 toggle
-  * DAS toggle
-  * etc.
-* Bet Spread
+### Betting Trainer _(In Progress)_
 
-## In-progress
-### Basic-Strategy Trainer
-The Basic-Strategy Trainer Module allows players to train their basic strategy so they never make a wrong playing decision. 
+Based on the current True Count, learn how to adjust your betting to maximize expected value and manage risk.
 
-Adjustable Settings:
-* Number of decks
-* Table rules
-  * H17 toggle
-  * DAS toggle
-  * etc.
-* Time to answer
-  
-### Card-Counting Trainer
-The Card-Counting Trainer allows players to practice keeping the running count so they know when they have the advantage over the casino.
+### Deviations Trainer _(In Progress)_
 
-Adjustable Settings:
-* Number of decks
-* Dealing speed
-* Count inquiry frequency
-* Time to answer
+Learn how to use the True Count to make "deviations" from Basic Strategy, enhancing overall playing strategy and adding up to **20% in overall earnings**.
 
-### Betting Trainer
-The Betting Trainer allows players to practice their betting strategy and make a profit.
+### Game Assessment _(In Progress)_
 
-Adjustable Settings:
-* Number of decks
-* Table rules
-  * H17 toggle
-  * DAS toggle
-  * etc.
-* Bet spread
-* Time to bet
+Evaluate your Blackjack skills through structured tests. Simulate a casino environment to determine whether your strategy, counting, and betting are strong enough to beat the house.
 
-### Advanced-Strategy Trainer
-The Advanced-Strategy trainer allows players to further enhance their playing strategy to add up to 20% in overall earnings.
+## Machine Learning
 
-Adjustable Settings:
-* Number of decks
-* Table rules
-  * H17 toggle
-  * DAS toggle
-  * etc.
-* Deviations considered
-* Time to answer
+### Model
 
-### Game Assessment
-The Game Assessment puts players' skills to the test to see if their game is enough to beat the casino.
+The model is based on **Reinforcement Learning**, using the **Unity ML-Agents** framework and a **Proximal Policy Optimization (PPO)** trainer. It learns by simulating millions of hands and optimizing for long-term rewards.
 
-Adjustable Settings:
-* Number of decks
-* Table rules
-  * H17 toggle
-  * DAS toggle
-  * etc.
-* Bet spread
+**Model Input Features:**
+- Player Hand Value
+- Hand Type (Hard/Soft)
+- Dealer Up Card
+- True Count (TC)
+- Running Count (RC)
+- Whether doubling, splitting, or insurance is allowed
+
+**Model Output (Softmax over actions):**
+- Hit
+- Stand
+- Double
+- Split
+- Take Insurance
+- Refuse Insurance
+
+## Results
+
+| True Count | Player Edge (%)      |
+|------------|----------------------|
+| TC -5      |                      |
+| TC -4      |                      |
+| TC -3      |                      |
+| TC -2      |                      |
+| TC -1      |                      |
+| TC 0       |                      |
+| TC 1       |                      |
+| TC 2       |                      |
+| TC 3       |                      |
+| TC 4       |                      |
+| TC 5       |                      |
+
+> *Note: Values will be filled in as testing completes. Preliminary analysis shows up to a 20% edge over the house at high TCs.*
+
+## Disclaimer
+
+**Blackjack Wingman is strictly an educational tool.**
+
+This application is designed to teach users the math and strategy behind Blackjack in a controlled, simulated environment. It is **not** intended to encourage or condone gambling in real casinos.
+
+While this may demonstrate a statistical edge under certain conditions, there is **no guarantee of profit—even with perfect play**. Gambling involves significant financial risk, and this tool should be used for educational purposes only. **Use at your own discretion.**
