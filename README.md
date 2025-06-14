@@ -6,7 +6,7 @@
 
 **Blackjack Wingman** is an educational application designed to teach and train users on how to beat Blackjack. With a variety of interactive trainers, you can master key skills such as **Basic Strategy**, **Card Counting**, **Betting**, and **Deviations**.
 
-The application also includes a **Machine Learning (ML)** environment responsible for deriving the novel _Advanced Strategy_. Utilizing reinforcement learning, the model adapts based on the composition of the shoe, yielding up to a **20% edge over the house**.
+The application also includes a **Machine Learning (ML)** environment responsible for deriving a novel _Advanced Strategy_. Utilizing reinforcement learning, the model adapts based on the composition of the shoe, yielding up to a **20% edge over the house**.
 
 ## Features
 
