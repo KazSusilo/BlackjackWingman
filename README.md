@@ -4,80 +4,46 @@
 
 ## Summary
 
-**Blackjack Wingman** is an educational application designed to teach and train users on how to beat Blackjack. With a variety of interactive trainers, you can master key skills such as **Basic Strategy**, **Card Counting**, **Betting**, and **Deviations**.
+**Blackjack Wingman** is a research project exploring algorithmic strategies to beat Blackjack. Using large-scale simulation and reinforcement learning, the project explores various model architectures that maximize long-term expected value under realistic casino rules and shoe dynamics. After countless iterations of prototyping, fine-tuning, and training, a model emerged with a **+18% statistical edge** over the house. 
 
-The application also includes a **Machine Learning (ML)** environment responsible for deriving a novel _Advanced Strategy_. Utilizing reinforcement learning, the model adapts based on the composition of the shoe, yielding up to a **20% edge over the house**.
+## Model
 
-## Features
+The model architecture a **Deep Q-Network (DQN)**, learning from experience and iteratively improving upon itself. DQNs approximate what's known as **Q-values**, which represent the expected future reward of taking an action in a given state. This perfectly aligns with the research objective, as the fundamental goal is to solve a decision problem where each action influences a future reward. 
 
-### Free Play
+**Network Architecture**
+- **Input**: normalized/encoded observations from environment
+- **Hidden Layers**: 2 fully connected layers × **128** neurons each, **ReLU** activations  
+- **Output Layer**: **6** nodes (Stand, Hit, Double, Split, Take Insurance, Refuse Insurance) with **Softmax** to produce a distribution over actions (used for action selection).  
+- **Loss**: **Mean Squared Error (MSE)** over target Q-values  
+- **Optimizer**: **Adam**, initial learning rate **0.0003**
 
-Practice Blackjack freely in a simulated casino environment. Great for casual play or testing strategies in real time.
+## Training
 
-### Basic Strategy Trainer _(In Progress)_
+**Training Hyperparameters**
+- **Batch Size**: **1024** (experiences per gradient step)  
+- **Replay Buffer Size**: **10,240** (experiences before updates)  
+- **Epochs per Update**: **10** (passes over sampled experience)  
+- **Discount Factor (γ)**: **0.99**  
+- **Normalization**: all inputs normalized/encoded prior to the network
 
-Learn the mathematically optimal play for each hand. Players will receive real-time feedback and explanations to build foundational knowledge.
+The environment provides rewards derived from hand outcomes; target values are computed from bootstrapped Q-estimates. Action masks ensure the agent only selects legal actions (e.g., Double/Split when permitted).
 
-### Card Counting Trainer _(In Progress)_
-
-Train your card counting ability using various drills that simulate real-world dealing speeds. Improve your tracking of the running count and conversion to true count.
-
-### Betting Trainer _(In Progress)_
-
-Based on the current True Count, learn how to adjust your betting to maximize expected value and manage risk.
-
-### Deviations Trainer _(In Progress)_
-
-Learn how to use the True Count to make "deviations" from Basic Strategy, enhancing overall playing strategy and adding up to **20% in overall earnings**.
-
-### Game Assessment _(In Progress)_
-
-Evaluate your Blackjack skills through structured tests. Simulate a casino environment to determine whether your strategy, counting, and betting are strong enough to beat the house.
-
-## Machine Learning
-
-### Model
-
-The model is based on **Reinforcement Learning**, using the **Unity ML-Agents** framework and a **Proximal Policy Optimization (PPO)** trainer. It learns by simulating millions of hands and optimizing for long-term rewards.
-
-**Model Input Features:**
-- Player Hand Value
-- Hand Type (Hard/Soft)
-- Dealer Up Card
-- True Count (TC)
-- Running Count (RC)
-- Whether doubling, splitting, or insurance is allowed
-
-**Model Output (Softmax over actions):**
-- Hit
-- Stand
-- Double
-- Split
-- Take Insurance
-- Refuse Insurance
+In addition, to accelerate learning in a relatively large action space and avoid protracted or stalled convergence, reward shaping was introduced during the initial phase of training. Small, shaped signals nudged the agent toward sensible behaviors to establish a competent baseline quickly. After actions stabilized, reward shaping was **annealed and removed**, returning to outcome-based rewards exclusively. This prevented long-term bias from shaped signals and allowed the agent to freely discover potentially more rewarding action sequences under the true objective.
 
 ## Results
+| Metric           | Hands Simulated | Result  |
+|------------------|-----------------|---------|
+| Player Edge (EV) | 10,000,000      | **+18%** |
+> *Note: Performance metrics may exhibit a degree of variability across different simulations. Nonetheless, the findings were obtained through an impartial and fair simulation.*
 
-| True Count | Player Edge (%)      |
-|------------|----------------------|
-| TC -5      |                      |
-| TC -4      |                      |
-| TC -3      |                      |
-| TC -2      |                      |
-| TC -1      |                      |
-| TC 0       |                      |
-| TC 1       |                      |
-| TC 2       |                      |
-| TC 3       |                      |
-| TC 4       |                      |
-| TC 5       |                      |
+## Limitations
+While an ML, it's important to understand its limitations.
 
-> *Note: Values will be filled in as testing completes. Preliminary analysis shows up to a 20% edge over the house at high TCs.*
+One limitation the model has is that it's currently limited to a specific set of Blackjack table rules. With various versions of Blackjack being available (), different rules necessitate different strategies. 
 
 ## Disclaimer
+**Blackjack Wingman strictly represents a research effort.**
 
-**Blackjack Wingman is strictly an educational tool.**
+This project is designed to explore various strategies with ML models in a controlled and simulated environment. It is **not** intended to encourage or conndone gambling. 
 
-This application is designed to teach users the math and strategy behind Blackjack in a controlled, simulated environment. It is **not** intended to encourage or condone gambling in real casinos.
-
-While this may demonstrate a statistical edge under certain conditions, there is **no guarantee of profit—even with perfect play**. Gambling involves significant financial risk, and this tool should be used for educational purposes only. **Use at your own discretion.**
+Performance figures are derived from simulations under specific assumptions and **do not guarantee profit** in real-world play. Casinos vary in rules, procedures, and countermeasures. Thus, outcomes in practice can differ substantially.
